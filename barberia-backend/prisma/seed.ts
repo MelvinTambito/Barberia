@@ -3,7 +3,9 @@ import { PrismaClient, Role } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Limpiar tablas para evitar duplicados
+  // 0. Limpiar tablas secundarias para evitar errores de Foreign Key
+  await prisma.chatLog.deleteMany();
+  await prisma.facialAnalysis.deleteMany();
   await prisma.appointment.deleteMany();
   await prisma.service.deleteMany();
   await prisma.user.deleteMany();

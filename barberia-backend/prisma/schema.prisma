@@ -41,6 +41,8 @@ model User {
 
   clientAppointments  Appointment[]     @relation("ClientAppointments")
   barberAppointments  Appointment[]     @relation("BarberAppointments")
+  facialAnalyses      FacialAnalysis[]
+  chatLogs            ChatLog[]
 }
 
 model Service {
@@ -79,4 +81,28 @@ model Appointment {
 
   @@index([barberId, startTime])
   @@index([clientId])
+}
+model FacialAnalysis {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  faceShape       String
+  recommendations String   @db.Text
+  imageUrl        String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ChatLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  userMessage String   @db.Text
+  botResponse String   @db.Text
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

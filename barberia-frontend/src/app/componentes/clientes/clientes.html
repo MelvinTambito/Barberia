@@ -1,0 +1,126 @@
+<div class="app-container">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <span>💈 <strong>BARBERÍA TRADICIONAL</strong></span>
+      <span class="divider">|</span>
+      <span>Horario: 09:00 - 20:00 • Navaja, Toalla Caliente & Tijera Clásica</span>
+    </div>
+    <div class="top-bar-right">
+      <span class="gold-text">★ Calidad & Oficio Tradicional desde 2026 ★</span>
+      <button class="btn-restore" (click)="cerrarSesion()">CERRAR SESIÓN</button>
+    </div>
+  </div>
+
+  <header class="main-header">
+    <div class="brand-box">
+      <div class="brand-icon">✂</div>
+      <div class="brand-text">
+        <h1>BARBER APP</h1>
+        <p>GESTIÓN & CLUB DE LEALTAD</p>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <button class="nav-item" (click)="navegarA('/dashboard')">📊 DASHBOARD</button>
+      <button class="nav-item active">👥 CLIENTES</button>
+      <button class="nav-item" (click)="navegarA('/barberos')">✂️ BARBEROS</button>
+      <button class="nav-item" (click)="navegarA('/servicios')">🧹 SERVICIOS</button>
+      <button class="nav-item" (click)="navegarA('/citas')">
+        📅 AGENDAR CITA <span class="badge">4 HOY</span>
+      </button>
+      <button class="nav-item" (click)="navegarA('/fidelizacion')">
+        🏅 FIDELIZACIÓN <span class="gold-badge">PUNTOS</span>
+      </button>
+      <button class="btn-primary-action" (click)="navegarA('/citas')">
+        ✂️ + AGENDAR CITA
+      </button>
+    </nav>
+  </header>
+
+  <section class="section-banner">
+    <div class="banner-title-box">
+      <p class="banner-subtitle">★ PADRÓN DE CABALLEROS & CLIENTES ★</p>
+      <h2 class="banner-title">Registro de la Clientela</h2>
+      <p class="banner-description">
+        Directorio personal, fichas de contacto y balance acumulado de puntos de tradición.
+      </p>
+    </div>
+    <div class="banner-action-box">
+      <button class="btn-hero-red" (click)="abrirModalNuevoCliente()">
+        👤+ REGISTRAR NUEVO CLIENTE
+      </button>
+    </div>
+  </section>
+
+  <section class="filter-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Buscar por nombre, teléfono o correo..." 
+        [(ngModel)]="filtro"
+        (input)="filtrarClientes()"
+      />
+    </div>
+    <div class="summary-info">
+      <span>TOTAL CLIENTES: <strong>{{ clientesFiltrados.length }}</strong></span>
+      <span class="divider">|</span>
+      <span class="gold-text">PUNTOS EN CIRCULACIÓN: <strong>245 PTS</strong></span>
+    </div>
+  </section>
+
+  <section class="table-container">
+    <table class="client-table">
+      <thead>
+        <tr>
+          <th>CLIENTE</th>
+          <th>CONTACTO</th>
+          <th>NIVEL</th>
+          <th>PUNTOS ACUMULADOS</th>
+          <th>VISITAS</th>
+          <th class="text-center">ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cliente of clientesFiltrados">
+          <td>
+            <div class="client-profile">
+              <div class="avatar">{{ cliente.iniciales }}</div>
+              <div class="client-info">
+                <span class="client-name">{{ cliente.nombre }}</span>
+                <span class="client-since">Miembro desde {{ cliente.fechaIngreso }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="contact-info">
+              <span>📞 {{ cliente.telefono }}</span>
+              <span class="email">✉️ {{ cliente.email }}</span>
+            </div>
+          </td>
+          <td>
+            <span [class]="'badge-level ' + cliente.claseNivel">
+              {{ cliente.nivel }}
+            </span>
+          </td>
+          <td>
+            <div class="points-box">
+              🎗️ {{ cliente.puntos }} pts
+            </div>
+          </td>
+          <td class="visits-count">
+            {{ cliente.visitas }}
+          </td>
+          <td class="text-center">
+            <div class="actions-box">
+              <button class="btn-icon" title="Historial">🕒</button>
+              <button class="btn-agendar" (click)="agendarParaCliente(cliente)">
+                📅 AGENDAR
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

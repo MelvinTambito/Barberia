@@ -1,0 +1,48 @@
+<div style="background-color: #2a2a2a; border: 2px dashed #ff4d4d; padding: 25px; margin: 20px 0; border-radius: 8px; text-align: center; color: white;">
+  <h3>✨ Análisis Inteligente de Cortes con Gemini AI</h3>
+  <p>Sube una foto o enciende la cámara en vivo del dispositivo para obtener recomendaciones de estilo.</p>
+  
+  <!-- Opciones de selección -->
+  <div style="margin: 20px 0; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+    <label style="background-color: #333; padding: 10px 15px; border-radius: 4px; cursor: pointer; border: 1px solid #555;">
+      📂 Subir desde archivo
+      <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+    </label>
+    
+    <button type="button" (click)="iniciarCamara()" style="background-color: #2196F3; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+      📷 Usar Cámara en Vivo
+    </button>
+  </div>
+
+  <!-- Vista previa de la Cámara Web en vivo -->
+  <div *ngIf="cameraActive" style="margin-top: 15px;">
+    <video #videoElement autoplay playsinline style="width: 100%; max-width: 320px; border-radius: 8px; border: 2px solid #2196F3;"></video>
+    <div>
+      <button type="button" (click)="capturarFoto()" style="background-color: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+        📸 Capturar Foto
+      </button>
+      <button type="button" (click)="apagarCamara()" style="background-color: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; margin-left: 10px;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Canvas oculto para procesar la foto de la webcam -->
+  <canvas #canvasElement style="display: none;"></canvas>
+
+  <!-- Vista previa de la imagen seleccionada o capturada -->
+  <div *ngIf="selectedImageUrl && !cameraActive" style="margin-top: 15px;">
+    <img [src]="selectedImageUrl" alt="Vista previa" style="max-width: 220px; border-radius: 6px; border: 2px solid #ff4d4d;">
+    <div style="margin-top: 15px;">
+      <button type="button" (click)="enviarImagenGemini()" [disabled]="isProcessing" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 25px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+        {{ isProcessing ? 'Analizando...' : 'Analizar Imagen con Gemini' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Resultado del análisis -->
+  <div *ngIf="analysisResult" style="margin-top: 20px; background-color: #1a1a1a; padding: 15px; border-radius: 6px; border-left: 4px solid #4eff91; text-align: left;">
+    <strong style="color: #4eff91;">💡 Resultado de la IA:</strong>
+    <p style="margin-top: 5px; color: #e0e0e0; line-height: 1.4;">{{ analysisResult }}</p>
+  </div>
+</div>

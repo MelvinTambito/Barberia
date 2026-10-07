@@ -43,6 +43,11 @@ export class AuthService {
     };
   }
 
+  // 👈 ESTE ES EL MÉTODO QUE EL CONTROLADOR ESTÁ BUSCANDO
+  async login(email: string) {
+    return this.devLogin(email);
+  }
+
   // Endpoint de soporte para pruebas manuales directas
   async devLogin(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });

@@ -6,9 +6,11 @@ import { ServicesModule } from './services/services.module';
 import { UsersModule } from './users/users.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { AuthModule } from './auth/auth.module';
+import { VisagismModule } from './visagism/visagism.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
-  imports: [PrismaModule, ServicesModule, UsersModule, AppointmentsModule, AuthModule],
+  imports: [PrismaModule, ServicesModule, UsersModule, AppointmentsModule, AuthModule, VisagismModule, ChatbotModule],
   controllers: [AppController],
   providers: [AppService],
 })
