@@ -9,6 +9,8 @@ export interface Person {
   profilePhoto?: string | null;
   points: number;
   role: string;
+  isSuperAdmin?: boolean;
+  permissions?: string[];
   createdAt: string;
   strikes: number;
   accountStatus: string;
@@ -46,6 +48,9 @@ export function errorMessage(e: HttpErrorResponse) {
           ? 'No se pudo conectar al servidor. Comprueba que el backend esté iniciado.'
           : 'No se pudo completar la operación. Inténtalo de nuevo.');
 }
+export function canManage(user: Person | undefined, permission: string) {
+  return user?.role === 'ADMIN' && (user.isSuperAdmin === true || user.permissions?.includes(permission) === true);
+}
 @Injectable({ providedIn: 'root' })
 export class Api {
   constructor(private http: HttpClient) {}
@@ -58,4 +63,5 @@ export class Api {
   patch<T>(path: string, body: unknown) {
     return this.http.patch<T>(environment.apiUrl + path, body);
   }
+  delete<T>(path: string) { return this.http.delete<T>(environment.apiUrl + path); }
 }

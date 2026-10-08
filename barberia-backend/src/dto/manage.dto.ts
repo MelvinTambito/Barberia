@@ -11,6 +11,9 @@ import {
   MaxLength,
   Min,
   Matches,
+  IsArray,
+  ArrayUnique,
+  IsIn,
 } from 'class-validator';
 import { AppointmentStatus } from '@prisma/client';
 
@@ -23,6 +26,13 @@ export class PersonDto {
   @MaxLength(90000)
   @Matches(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/)
   profilePhoto?: string | null;
+}
+export class AdminDto {
+  @IsEmail() email: string;
+  @IsString() @IsNotEmpty() @MaxLength(100) name: string;
+  @IsArray() @ArrayUnique()
+  @IsIn(['CLIENTS', 'BARBERS', 'SERVICES', 'APPOINTMENTS', 'LOYALTY'], { each: true })
+  permissions: string[];
 }
 export class ServiceDto {
   @IsString() @IsNotEmpty() @MaxLength(100) name: string;

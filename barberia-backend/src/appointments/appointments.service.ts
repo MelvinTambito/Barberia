@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { AppointmentStatus, User } from '@prisma/client';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
+import { can } from '../common/permissions';
 
 @Injectable()
 export class AppointmentsService {
@@ -26,7 +27,7 @@ export class AppointmentsService {
     appointment: { clientId: number; barberId: number },
   ) {
     if (
-      actor.role !== 'ADMIN' &&
+      !can(actor, 'APPOINTMENTS') &&
       !(actor.role === 'BARBER' && actor.id === appointment.barberId) &&
       actor.id !== appointment.clientId
     )
@@ -74,7 +75,7 @@ export class AppointmentsService {
     return slots;
   }
   async create(dto: CreateAppointmentDto, actor: User) {
-    if (actor.role === 'CLIENT' && actor.id !== dto.clientId)
+    if (!can(actor, 'APPOINTMENTS') && actor.role !== 'BARBER' && actor.id !== dto.clientId)
       throw new ForbiddenException();
     const startTime = this.day(dto.date, dto.time);
     if (startTime.getTime() <= Date.now())
@@ -160,12 +161,12 @@ export class AppointmentsService {
         throw new BadRequestException('Esta cita ya está finalizada');
       if (
         status === 'PENDING' ||
-        (actor.role === 'CLIENT' && status !== 'CANCELLED')
+        (!can(actor, 'APPOINTMENTS') && actor.role !== 'BARBER' && status !== 'CANCELLED')
       )
         throw new ForbiddenException('Cambio no permitido');
       if (
         status === 'CANCELLED' &&
-        actor.role === 'CLIENT' &&
+        !can(actor, 'APPOINTMENTS') && actor.role !== 'BARBER' &&
         a.startTime.getTime() - Date.now() < 3600000
       )
         throw new BadRequestException(
@@ -203,7 +204,7 @@ export class AppointmentsService {
   }
   list(actor: User, clientId?: number, date?: string) {
     const scope =
-      actor.role === 'ADMIN'
+      can(actor, 'APPOINTMENTS')
         ? {}
         : actor.role === 'BARBER'
           ? { barberId: actor.id }

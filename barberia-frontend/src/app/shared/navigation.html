@@ -10,7 +10,7 @@
     <span class="user-identity" aria-live="polite">
       @if (user(); as profile) {
         <strong>{{ profile.name }}</strong>
-        <span class="gold-badge">{{ roleLabel(profile.role) }}</span>
+        <span class="gold-badge">{{ profile.isSuperAdmin ? 'Superadministrador' : roleLabel(profile.role) }}</span>
       } @else {
         <span>{{ profileError() ? 'Perfil no disponible' : 'Cargando perfil…' }}</span>
       }

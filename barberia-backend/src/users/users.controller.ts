@@ -9,16 +9,26 @@ import {
   Query,
   UseGuards,
   BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Role, User } from '@prisma/client';
-import { PersonDto } from '../dto/manage.dto';
+import { PersonDto, AdminDto } from '../dto/manage.dto';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+  @Get('administrators') administrators(@CurrentUser() user: User) {
+    return this.usersService.administrators(user);
+  }
+  @Post('administrators') saveAdministrator(@CurrentUser() user: User, @Body() data: AdminDto) {
+    return this.usersService.saveAdministrator(user, data);
+  }
+  @Delete('administrators/:id') revokeAdministrator(@CurrentUser() user: User, @Param('id', ParseIntPipe) id: number) {
+    return this.usersService.revokeAdministrator(user, id);
+  }
   @Get('barbers') getBarbers() {
     return this.usersService.getBarbers();
   }

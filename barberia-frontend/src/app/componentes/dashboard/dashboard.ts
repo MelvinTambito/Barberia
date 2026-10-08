@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { GeminiAnalisisComponent } from './gemini-analisis/gemini-analisis.component';
 import { Navigation } from '../../shared/navigation';
+import { Administration } from '../../shared/administration';
 import { Api, Person, Appointment, errorMessage } from '../../core/services/api';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, GeminiAnalisisComponent, Navigation],
+  imports: [CommonModule, RouterLink, GeminiAnalisisComponent, Navigation, Administration],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css', '../../shared/forms.css'],
 })

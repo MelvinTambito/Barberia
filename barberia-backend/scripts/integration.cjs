@@ -33,6 +33,7 @@ async function person(role, points = 0) {
       name: stamp + ' ' + role,
       email: `${stamp}-${ids.length}@example.test`,
       role,
+      permissions: role === 'ADMIN' ? ['CLIENTS', 'BARBERS', 'SERVICES', 'APPOINTMENTS', 'LOYALTY'] : [],
       points,
     },
   });

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Api, Person, Appointment, errorMessage } from '../../core/services/api';
+import { Api, Person, Appointment, canManage, errorMessage } from '../../core/services/api';
 import { Navigation } from '../../shared/navigation';
 interface Cliente {
   id: number;
@@ -42,7 +42,7 @@ export class Clientes implements OnInit {
     private route: ActivatedRoute,
   ) {}
   get staff() {
-    return this.me?.role === 'ADMIN' || this.me?.role === 'BARBER';
+    return canManage(this.me, 'CLIENTS') || this.me?.role === 'BARBER';
   }
   get totalPoints() {
     return this.listaClientes.reduce((sum, c) => sum + c.puntos, 0);

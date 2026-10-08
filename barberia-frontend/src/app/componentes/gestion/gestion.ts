@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, Subscription } from 'rxjs';
-import { Api, Person, Service, Appointment, errorMessage } from '../../core/services/api';
+import { Api, Person, Service, Appointment, errorMessage, canManage } from '../../core/services/api';
 import { Navigation } from '../../shared/navigation';
 import { ProfilePhoto } from '../../shared/profile-photo';
 @Component({
@@ -59,10 +59,10 @@ export class Gestion implements OnInit, OnDestroy {
     private route: ActivatedRoute,
   ) {}
   get admin() {
-    return this.me?.role === 'ADMIN';
+    return canManage(this.me, this.page === 'barberos' ? 'BARBERS' : this.page === 'servicios' ? 'SERVICES' : 'LOYALTY');
   }
   get staff() {
-    return this.me?.role === 'ADMIN' || this.me?.role === 'BARBER';
+    return canManage(this.me, this.page === 'fidelizacion' ? 'LOYALTY' : 'APPOINTMENTS') || this.me?.role === 'BARBER';
   }
   get today() {
     return new Intl.DateTimeFormat('en-CA', {
