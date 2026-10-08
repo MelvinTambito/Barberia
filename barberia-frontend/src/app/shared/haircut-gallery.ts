@@ -14,21 +14,26 @@ import { Component } from '@angular/core';
               <img [src]="cut.image" [alt]="cut.alt" loading="lazy" width="500" height="750" />
             </a>
             <h4>{{ cut.name }}</h4>
-            <p>{{ cut.description }}</p>
-            <small>Foto: {{ cut.author }} · <a [href]="cut.source" target="_blank" rel="noopener">Fuente</a> · <a [href]="cut.licenseUrl" target="_blank" rel="noopener">{{ cut.license }}</a></small>
+            <details>
+              <summary>Descripción y créditos</summary>
+              <p>{{ cut.description }}</p>
+              <small>Foto: {{ cut.author }} · <a [href]="cut.source" target="_blank" rel="noopener">Fuente</a> · <a [href]="cut.licenseUrl" target="_blank" rel="noopener">{{ cut.license }}</a></small>
+            </details>
           </article>
         }
       </div>
     </section>
   `,
   styles: [`
-    :host { display: block; margin-top: 24px; color: #e0e0e0; }
-    .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-    article { background: #1a1a1a; border: 1px solid #555; border-radius: 8px; padding: 16px; text-align: left; }
-    img { width: 100%; height: 300px; object-fit: contain; background: #252525; border-radius: 6px; }
-    h4 { color: #c5a059; font-size: 1.15rem; margin: 14px 0 8px; }
+    :host { display: block; margin-top: 16px; color: #e0e0e0; }
+    .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 180px)); justify-content: center; align-items: start; gap: 12px; }
+    article { background: #1a1a1a; border: 1px solid #555; border-radius: 8px; padding: 10px; text-align: left; }
+    img { width: 100%; height: 120px; object-fit: contain; background: #252525; border-radius: 6px; }
+    h4 { color: #c5a059; font-size: .95rem; margin: 8px 0; }
+    details { font-size: .8rem; overflow-wrap: anywhere; } summary { cursor: pointer; }
     p { line-height: 1.5; } small { display: block; line-height: 1.6; } a { color: #c5a059; }
-    @media(max-width: 750px) { .gallery { grid-template-columns: 1fr; } }
+    @media(max-width: 480px) { .gallery { grid-template-columns: repeat(2, minmax(0, 180px)); } }
+    @media(max-width: 320px) { .gallery { grid-template-columns: minmax(0, 180px); } }
   `],
 })
 export class HaircutGallery {

@@ -45,5 +45,5 @@
     <strong style="color: #4eff91;">💡 Resultado de la IA:</strong>
     <p aria-live="polite" style="margin-top: 5px; color: #e0e0e0; line-height: 1.4; white-space: pre-line;">{{ analysisResult }}</p>
   </div>
-  <app-haircut-gallery />
+  <app-haircut-gallery *ngIf="analysisId && !isProcessing" />
 </div>
