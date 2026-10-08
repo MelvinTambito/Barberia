@@ -56,6 +56,7 @@ export class VisagismService {
         recommendations: result.recommendations,
         imageUrl: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
       },
+      select: { id: true, faceShape: true, recommendations: true, createdAt: true },
     });
     return { success: true, data };
   }

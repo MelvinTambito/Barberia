@@ -29,6 +29,10 @@ export class GeminiAnalisisComponent implements OnDestroy {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.apagarCamara();
+      this.selectedFile = null;
+      this.selectedImageUrl = null;
+      event.target.value = '';
       if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) {
         this.analysisResult = 'Usa una imagen JPG, PNG o WebP de hasta 5 MB.';
         return;
@@ -39,6 +43,11 @@ export class GeminiAnalisisComponent implements OnDestroy {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedImageUrl = e.target.result;
+        this.cdr.markForCheck();
+      };
+      reader.onerror = () => {
+        this.selectedFile = null;
+        this.analysisResult = 'No se pudo leer el archivo. Prueba una foto JPG, PNG o WebP guardada en tu computadora.';
         this.cdr.markForCheck();
       };
       reader.readAsDataURL(file);
@@ -105,14 +114,26 @@ export class GeminiAnalisisComponent implements OnDestroy {
   }
 
   // 5. Enviar imagen y userId al backend de NestJS (/visagism/analyze)
-  enviarImagenGemini() {
-    if (!this.selectedFile) return;
+  async enviarImagenGemini() {
+    if (!this.selectedFile || this.isProcessing) return;
 
     this.isProcessing = true;
+    this.analysisResult = 'Preparando imagen para el análisis…';
+
+    let image: Blob;
+    try {
+      image = await this.prepareImage(this.selectedFile);
+    } catch {
+      this.isProcessing = false;
+      this.analysisResult = 'No se pudo preparar la foto. Prueba otro archivo JPG, PNG o WebP.';
+      this.cdr.markForCheck();
+      return;
+    }
     this.analysisResult = 'Analizando facciones y recomendando estilos con Gemini...';
+    this.cdr.markForCheck();
 
     const formData = new FormData();
-    formData.append('file', this.selectedFile); // Campo requerido por Swagger
+    formData.append('file', image, 'analisis.jpg');
 
     this.http.post<any>(environment.apiUrl + '/visagism/analyze', formData).subscribe({
       next: (response) => {
@@ -125,10 +146,37 @@ export class GeminiAnalisisComponent implements OnDestroy {
       error: (err) => {
         console.error('Error al conectar con la API:', err);
         this.isProcessing = false;
-        this.analysisResult = errorMessage(err);
+        this.analysisResult = err.status === 0
+          ? 'No se recibió respuesta del servidor de análisis. Inténtalo otra vez; si persiste, revisa en Vercel el registro de POST /visagism/analyze.'
+          : err.status === 413
+            ? 'La imagen supera el tamaño permitido por el servidor. Prueba una foto más pequeña.'
+            : errorMessage(err);
         this.cdr.markForCheck();
       },
     });
+  }
+
+  private async prepareImage(file: File): Promise<Blob> {
+    const url = URL.createObjectURL(file);
+    try {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      const scale = Math.min(1, 1280 / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Canvas unavailable');
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      for (const quality of [0.85, 0.65, 0.45, 0.25]) {
+        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+        if (blob && blob.size <= 1024 * 1024) return blob;
+      }
+      throw new Error('Image too large');
+    } finally { URL.revokeObjectURL(url); }
   }
 
   ngOnDestroy() {
