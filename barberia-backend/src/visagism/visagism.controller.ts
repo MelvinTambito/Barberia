@@ -5,9 +5,11 @@ import {
   UploadedFile,
   BadRequestException,
   UseGuards,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VisagismService } from './visagism.service';
+import { AnalyzeFaceDto } from '../dto/manage.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -38,8 +40,8 @@ export class VisagismController {
         ),
     }),
   )
-  analyze(@UploadedFile() file: any, @CurrentUser() user: any) {
+  analyze(@UploadedFile() file: any, @CurrentUser() user: any, @Body() body: AnalyzeFaceDto) {
     if (!file) throw new BadRequestException('Selecciona una imagen');
-    return this.service.analyzeFace(user.id, file);
+    return this.service.analyzeFace(user.id, file, body.previousAnalysisId);
   }
 }

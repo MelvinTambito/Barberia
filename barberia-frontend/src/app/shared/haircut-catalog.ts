@@ -1,0 +1,558 @@
+export interface HaircutReference { style: string; name: string; title: string; image: string; width: number; height: number; crop: number[]; author: string; license: string; licenseUrl: string; source: string; }
+export const HAIRCUT_CATALOG: HaircutReference[] = [
+  {
+    "style": "crew",
+    "title": "Crew Cut, Semi Short Taper.jpg",
+    "image": "/haircuts/ref-01.jpg",
+    "width": 600,
+    "height": 906,
+    "author": "File:USMC-111030-M-AR635-254.jpg : The original uploader was Slick-o-bot at Wikipedia . derivative work: User:-MiltonPB-",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Crew_Cut,_Semi_Short_Taper.jpg",
+    "crop": [
+      0,
+      45,
+      570,
+      680
+    ],
+    "name": "Corto clásico · 1"
+  },
+  {
+    "style": "quiff",
+    "title": "Colton Haynes Comic-Con 2012.jpg",
+    "image": "/haircuts/ref-02.jpg",
+    "width": 600,
+    "height": 806,
+    "author": "Thibault",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Colton_Haynes_Comic-Con_2012.jpg",
+    "crop": [
+      102,
+      16,
+      414,
+      580
+    ],
+    "name": "Volumen y tupé · 2"
+  },
+  {
+    "style": "crew",
+    "title": "Jensen Ackles 2015.jpg",
+    "image": "/haircuts/ref-03.jpg",
+    "width": 600,
+    "height": 854,
+    "author": "Gage Skidmore",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Jensen_Ackles_2015.jpg",
+    "crop": [
+      54,
+      9,
+      450,
+      641
+    ],
+    "name": "Corto clásico · 3"
+  },
+  {
+    "style": "quiff",
+    "title": "Leonardo DiCaprio.jpeg",
+    "image": "/haircuts/ref-04.jpg",
+    "width": 600,
+    "height": 802,
+    "author": "Jaud ( de:Benutzer:Falkenauge )",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Leonardo_DiCaprio.jpeg",
+    "crop": [
+      84,
+      32,
+      426,
+      553
+    ],
+    "name": "Volumen y tupé · 4"
+  },
+  {
+    "style": "crew",
+    "title": "Ryan Reynolds by Gage Skidmore 3.jpg",
+    "image": "/haircuts/ref-05.jpg",
+    "width": 600,
+    "height": 879,
+    "author": "Gage Skidmore",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ryan_Reynolds_by_Gage_Skidmore_3.jpg",
+    "crop": [
+      120,
+      35,
+      402,
+      580
+    ],
+    "name": "Corto clásico · 5"
+  },
+  {
+    "style": "quiff",
+    "title": "RyanReynoldsApr09.jpg",
+    "image": "/haircuts/ref-06.jpg",
+    "width": 600,
+    "height": 657,
+    "author": "Grant Brummett at https://www.flickr.com/photos/grantbrummett/",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:RyanReynoldsApr09.jpg",
+    "crop": [
+      210,
+      16,
+      192,
+      269
+    ],
+    "name": "Volumen y tupé · 6"
+  },
+  {
+    "style": "crew",
+    "title": "Roger White, UCLA, 1956.jpg",
+    "image": "/haircuts/ref-07.jpg",
+    "width": 600,
+    "height": 679,
+    "author": "Unknown author Unknown author",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Roger_White,_UCLA,_1956.jpg",
+    "crop": [
+      150,
+      31,
+      360,
+      469
+    ],
+    "name": "Corto clásico · 7"
+  },
+  {
+    "style": "crew",
+    "title": "Crew Cut Marine Lieutenant wins All-Marine Cross Country Championship.jpg",
+    "image": "/haircuts/ref-08.jpg",
+    "width": 600,
+    "height": 1148,
+    "author": "Cpl. Steven H. Posy",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Crew_Cut_Marine_Lieutenant_wins_All-Marine_Cross_Country_Championship.jpg",
+    "crop": [
+      258,
+      86,
+      108,
+      161
+    ],
+    "name": "Corto clásico · 8"
+  },
+  {
+    "style": "buzz",
+    "title": "Austin Stowell-DolphinTale (cropped).jpg",
+    "image": "/haircuts/ref-10.jpg",
+    "width": 600,
+    "height": 767,
+    "author": "Jennifer Robertson, Alcon Entertainment",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Austin_Stowell-DolphinTale_(cropped).jpg",
+    "crop": [
+      30,
+      0,
+      540,
+      690
+    ],
+    "name": "Muy corto / rapado · 9"
+  },
+  {
+    "style": "buzz",
+    "title": "Channing-Tatum-Unwrapped-Fighting-Press-Junket-04-2009.jpg",
+    "image": "/haircuts/ref-11.jpg",
+    "width": 600,
+    "height": 1035,
+    "author": "Wcfirm",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Channing-Tatum-Unwrapped-Fighting-Press-Junket-04-2009.jpg",
+    "crop": [
+      96,
+      21,
+      402,
+      549
+    ],
+    "name": "Muy corto / rapado · 10"
+  },
+  {
+    "style": "buzz",
+    "title": "Alex Len 2012.jpg",
+    "image": "/haircuts/ref-14.jpg",
+    "width": 600,
+    "height": 900,
+    "author": "tony quinn",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Alex_Len_2012.jpg",
+    "crop": [
+      84,
+      0,
+      408,
+      558
+    ],
+    "name": "Muy corto / rapado · 11"
+  },
+  {
+    "style": "buzz",
+    "title": "Ben Gordon.jpg",
+    "image": "/haircuts/ref-15.jpg",
+    "width": 600,
+    "height": 400,
+    "author": "Jauerback",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ben_Gordon.jpg",
+    "crop": [
+      168,
+      0,
+      252,
+      340
+    ],
+    "name": "Muy corto / rapado · 12"
+  },
+  {
+    "style": "buzz",
+    "title": "Caron Butler.JPG",
+    "image": "/haircuts/ref-16.jpg",
+    "width": 600,
+    "height": 871,
+    "author": "Keith Allison",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Caron_Butler.JPG",
+    "crop": [
+      210,
+      65,
+      144,
+      174
+    ],
+    "name": "Muy corto / rapado · 13"
+  },
+  {
+    "style": "undercut",
+    "title": "Paul De La Cruz pauldlc undercut hair style.PNG",
+    "image": "/haircuts/ref-17.png",
+    "width": 600,
+    "height": 900,
+    "author": "Pmjn",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Paul_De_La_Cruz_pauldlc_undercut_hair_style.PNG",
+    "crop": [
+      84,
+      63,
+      438,
+      675
+    ],
+    "name": "Undercut · 14"
+  },
+  {
+    "style": "undercut",
+    "title": "David Beckham 2012.jpg",
+    "image": "/haircuts/ref-18.jpg",
+    "width": 600,
+    "height": 513,
+    "author": "Kunal Shah",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:David_Beckham_2012.jpg",
+    "crop": [
+      210,
+      15,
+      144,
+      180
+    ],
+    "name": "Undercut · 15"
+  },
+  {
+    "style": "quiff",
+    "title": "Zachary Quinto at the 2009 Tribeca Film Festival 2.jpg",
+    "image": "/haircuts/ref-19.jpg",
+    "width": 600,
+    "height": 895,
+    "author": "David Shankbone",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Zachary_Quinto_at_the_2009_Tribeca_Film_Festival_2.jpg",
+    "crop": [
+      144,
+      49,
+      348,
+      519
+    ],
+    "name": "Volumen y tupé · 16"
+  },
+  {
+    "style": "undercut",
+    "title": "Macklemore- The Heist Tour Toronto Nov 28 (8228255900).jpg",
+    "image": "/haircuts/ref-21.jpg",
+    "width": 600,
+    "height": 400,
+    "author": "thecomeupshow",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Macklemore-_The_Heist_Tour_Toronto_Nov_28_(8228255900).jpg",
+    "crop": [
+      222,
+      30,
+      228,
+      256
+    ],
+    "name": "Undercut · 17"
+  },
+  {
+    "style": "quiff",
+    "title": "Aiden Grimshaw X Factor Live Tour.jpg",
+    "image": "/haircuts/ref-27.jpg",
+    "width": 600,
+    "height": 450,
+    "author": "Fiona McKinlay",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Aiden_Grimshaw_X_Factor_Live_Tour.jpg",
+    "crop": [
+      291,
+      47,
+      57,
+      86
+    ],
+    "name": "Volumen y tupé · 18"
+  },
+  {
+    "style": "quiff",
+    "title": "ALEX TURNER.jpg",
+    "image": "/haircuts/ref-28.jpg",
+    "width": 600,
+    "height": 398,
+    "author": "Jason Persse from Brooklyn, USA",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:ALEX_TURNER.jpg",
+    "crop": [
+      99,
+      72,
+      117,
+      159
+    ],
+    "name": "Volumen y tupé · 19"
+  },
+  {
+    "style": "quiff",
+    "title": "Goetz alsmann 2005.jpg",
+    "image": "/haircuts/ref-29.jpg",
+    "width": 600,
+    "height": 627,
+    "author": "Elke Wetzig elya",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Goetz_alsmann_2005.jpg",
+    "crop": [
+      213,
+      44,
+      183,
+      263
+    ],
+    "name": "Volumen y tupé · 20"
+  },
+  {
+    "style": "quiff",
+    "title": "Harajuku tupe.jpg",
+    "image": "/haircuts/ref-30.jpg",
+    "width": 600,
+    "height": 800,
+    "author": "Luistxo",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Harajuku_tupe.jpg",
+    "crop": [
+      138,
+      44,
+      216,
+      292
+    ],
+    "name": "Volumen y tupé · 21"
+  },
+  {
+    "style": "quiff",
+    "title": "B.I - 2016 Gaon Chart K-pop Awards red carpet 0.jpg",
+    "image": "/haircuts/ref-32.jpg",
+    "width": 600,
+    "height": 853,
+    "author": "shaq32",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:B.I_-_2016_Gaon_Chart_K-pop_Awards_red_carpet_0.jpg",
+    "crop": [
+      51,
+      21,
+      318,
+      384
+    ],
+    "name": "Volumen y tupé · 22"
+  },
+  {
+    "style": "quiff",
+    "title": "PresleyPromo1954PhotoOnly.jpg",
+    "image": "/haircuts/ref-39.jpg",
+    "width": 286,
+    "height": 347,
+    "author": "PresleyPromo1954.jpg: Photographer unknown (commercial work-for-hire) derivative work: Dockino (talk)",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:PresleyPromo1954PhotoOnly.jpg",
+    "crop": [
+      40,
+      3,
+      172,
+      226
+    ],
+    "name": "Volumen y tupé · 23"
+  },
+  {
+    "style": "crew",
+    "title": "Brad_Pitt-69858.jpg",
+    "image": "/haircuts/ref-41.jpg",
+    "width": 500,
+    "height": 667,
+    "author": "Harald Krichel",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Brad_Pitt-69858.jpg",
+    "crop": [
+      140,
+      23,
+      260,
+      347
+    ],
+    "name": "Corto clásico · 24"
+  },
+  {
+    "style": "crew",
+    "title": "TechCrunch_Disrupt_San_Francisco_2019_-_Day_1_(48834070763)_(cropped).jpg",
+    "image": "/haircuts/ref-42.jpg",
+    "width": 500,
+    "height": 676,
+    "author": "TechCrunch",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:TechCrunch_Disrupt_San_Francisco_2019_-_Day_1_(48834070763)_(cropped).jpg",
+    "crop": [
+      110,
+      17,
+      290,
+      372
+    ],
+    "name": "Corto clásico · 25"
+  },
+  {
+    "style": "quiff",
+    "title": "Chris_Evans_at_the_2025_Toronto_International_Film_Festival_(cropped).jpg",
+    "image": "/haircuts/ref-43.jpg",
+    "width": 500,
+    "height": 751,
+    "author": "Sara Komatsu",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Chris_Evans_at_the_2025_Toronto_International_Film_Festival_(cropped).jpg",
+    "crop": [
+      70,
+      23,
+      325,
+      428
+    ],
+    "name": "Volumen y tupé · 26"
+  },
+  {
+    "style": "quiff",
+    "title": "Tom_Hardy_Locke_Premiere.jpg",
+    "image": "/haircuts/ref-44.jpg",
+    "width": 500,
+    "height": 690,
+    "author": "Tim Cornbill",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Tom_Hardy_Locke_Premiere.jpg",
+    "crop": [
+      73,
+      35,
+      370,
+      504
+    ],
+    "name": "Volumen y tupé · 27"
+  },
+  {
+    "style": "crew",
+    "title": "Michael_B_Jordan_-_Sinners_(cropped).jpg",
+    "image": "/haircuts/ref-45.jpg",
+    "width": 500,
+    "height": 667,
+    "author": "Kevin Paul",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Michael_B_Jordan_-_Sinners_(cropped).jpg",
+    "crop": [
+      123,
+      23,
+      255,
+      320
+    ],
+    "name": "Corto clásico · 28"
+  },
+  {
+    "style": "quiff",
+    "title": "Zayn_Wiki_(cropped).jpg",
+    "image": "/haircuts/ref-46.jpg",
+    "width": 500,
+    "height": 668,
+    "author": "First Access Entertainment",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Zayn_Wiki_(cropped).jpg",
+    "crop": [
+      25,
+      0,
+      450,
+      534
+    ],
+    "name": "Volumen y tupé · 29"
+  },
+  {
+    "style": "crew",
+    "title": "African American Man.jpg",
+    "image": "/haircuts/buzz-cut.jpg",
+    "width": 340,
+    "height": 476,
+    "crop": [
+      116,
+      38,
+      127,
+      157
+    ],
+    "author": "Pacian~commonswiki",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:African_American_Man.jpg",
+    "name": "Corto clásico · 30"
+  }
+];
+export function selectReferences(styles: string[], variation: number): HaircutReference[] {
+  const groups = [...new Set(styles)].map(style => HAIRCUT_CATALOG.filter(cut => cut.style === style)).filter(group => group.length);
+  if (!groups.length) return [];
+  const result: HaircutReference[] = [];
+  const offset = Math.max(0, Math.floor(variation));
+  for (let round = 0; result.length < 3 && round < 3; round++) {
+    for (const group of groups) {
+      const cut = group[(offset + round) % group.length];
+      if (!result.includes(cut)) result.push(cut);
+      if (result.length === 3) break;
+    }
+  }
+  return result;
+}
+

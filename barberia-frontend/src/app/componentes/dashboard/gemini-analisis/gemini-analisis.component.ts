@@ -19,12 +19,14 @@ export class GeminiAnalisisComponent implements OnDestroy {
   analysisResult: string | null = null;
   isProcessing: boolean = false;
   analysisId: number | null = null;
+  referenceStyles: string[] = [];
   private requests = new Subscription();
   private requestVersion = 0;
   private resetAnalysis() {
     this.requestVersion++;
     this.requests.unsubscribe(); this.requests = new Subscription();
     this.analysisId = null; this.isProcessing = false;
+    this.referenceStyles = [];
   }
 
   // Control para la cámara
@@ -128,6 +130,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
   // 5. Enviar imagen y userId al backend de NestJS (/visagism/analyze)
   async enviarImagenGemini() {
     if (!this.selectedFile || this.isProcessing) return;
+    const previousAnalysisId = this.analysisId;
     this.resetAnalysis();
     const version = this.requestVersion;
 
@@ -150,11 +153,13 @@ export class GeminiAnalisisComponent implements OnDestroy {
 
     const formData = new FormData();
     formData.append('file', image, 'analisis.jpg');
+    if (previousAnalysisId) formData.append('previousAnalysisId', String(previousAnalysisId));
 
     this.requests.add(this.http.post<any>(environment.apiUrl + '/visagism/analyze', formData).pipe(timeout(55000)).subscribe({
       next: (response) => {
         this.isProcessing = false;
         this.analysisId = response.data?.id || null;
+        this.referenceStyles = response.data?.referenceStyles || [];
         this.analysisResult =
           [response.data?.faceShape, response.data?.recommendations].filter(Boolean).join(': ') ||
           'No se recibió una recomendación.';

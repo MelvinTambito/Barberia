@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
+import { HAIRCUT_CATALOG, HaircutReference, selectReferences } from './haircut-catalog';
 
 @Component({
   selector: 'app-haircut-gallery',
@@ -6,61 +7,54 @@ import { Component } from '@angular/core';
   template: `
     <section aria-labelledby="gallery-title">
       <h3 id="gallery-title">Galería de cortes de referencia</h3>
-      <p>Ejemplos para conversar con tu barbero. Compáralos con las recomendaciones escritas; no son simulaciones sobre tu foto.</p>
+      <p>Fotos de estilos relacionados con el análisis. Son referencias para conversar con tu barbero.</p>
+      @if (!cuts.length) { <p>No hay fotos de estas familias en el catálogo. Puedes explorar las demás referencias.</p> }
       <div class="gallery">
         @for (cut of cuts; track cut.image) {
           <article>
-            <a [href]="cut.image" target="_blank" rel="noopener" [attr.aria-label]="'Ampliar foto de ' + cut.name">
-              <img [src]="cut.image" [alt]="cut.alt" loading="lazy" width="500" height="750" />
-            </a>
+            <svg [attr.viewBox]="cut.crop.join(' ')" role="img" [attr.aria-label]="cut.name" preserveAspectRatio="xMidYMid meet">
+              <title>{{ cut.name }}</title>
+              <defs><clipPath [attr.id]="'haircut-clip-' + $index"><rect [attr.x]="cut.crop[0]" [attr.y]="cut.crop[1]" [attr.width]="cut.crop[2]" [attr.height]="cut.crop[3]" /></clipPath></defs>
+              <image [attr.clip-path]="'url(#haircut-clip-' + $index + ')'" [attr.href]="cut.image" [attr.width]="cut.width" [attr.height]="cut.height" />
+            </svg>
             <h4>{{ cut.name }}</h4>
-            <details>
-              <summary>Descripción y créditos</summary>
-              <p>{{ cut.description }}</p>
-              <small>Foto: {{ cut.author }} · <a [href]="cut.source" target="_blank" rel="noopener">Fuente</a> · <a [href]="cut.licenseUrl" target="_blank" rel="noopener">{{ cut.license }}</a></small>
+            <details><summary>Créditos de la foto</summary>
+              <small>{{ cut.author }} · Encuadre de cabeza y rostro.
+              <a [href]="cut.source" target="_blank" rel="noopener">Fuente original</a> ·
+              <a [href]="cut.licenseUrl" target="_blank" rel="noopener">{{ cut.license }}</a></small>
             </details>
           </article>
         }
       </div>
+      @if (cuts.length) { <button type="button" (click)="next()">Ver otras referencias</button> }
+      <button type="button" (click)="toggleCatalog()">{{ showAll ? 'Volver a los estilos del análisis' : 'Explorar todo el catálogo (' + total + ')' }}</button>
+      @if (showAll) { <p>Catálogo general: estas fotos no son recomendaciones personalizadas.</p> }
     </section>
   `,
   styles: [`
-    :host { display: block; margin-top: 16px; color: #e0e0e0; }
-    .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 180px)); justify-content: center; align-items: start; gap: 12px; }
-    article { background: #1a1a1a; border: 1px solid #555; border-radius: 8px; padding: 10px; text-align: left; }
-    img { width: 100%; height: 120px; object-fit: contain; background: #252525; border-radius: 6px; }
-    h4 { color: #c5a059; font-size: .95rem; margin: 8px 0; }
-    details { font-size: .8rem; overflow-wrap: anywhere; } summary { cursor: pointer; }
-    p { line-height: 1.5; } small { display: block; line-height: 1.6; } a { color: #c5a059; }
-    @media(max-width: 480px) { .gallery { grid-template-columns: repeat(2, minmax(0, 180px)); } }
-    @media(max-width: 320px) { .gallery { grid-template-columns: minmax(0, 180px); } }
+    :host { display:block; margin-top:16px; color:#e0e0e0; }
+    .gallery { display:grid; grid-template-columns:repeat(3,minmax(0,180px)); justify-content:center; align-items:start; gap:12px; }
+    article { background:#1a1a1a; border:1px solid #555; border-radius:8px; padding:10px; text-align:left; }
+    svg { width:100%; height:140px; overflow:hidden; background:#252525; border-radius:6px; }
+    h4 { color:#c5a059; font-size:.95rem; margin:8px 0; }
+    details { font-size:.8rem; overflow-wrap:anywhere; } summary { cursor:pointer; }
+    p,small { line-height:1.5; } small { display:block; } a { color:#c5a059; }
+    button { margin:12px 6px 0; padding:8px 12px; border:1px solid #555; border-radius:6px; color:#c5a059; background:#1a1a1a; cursor:pointer; }
+    @media(max-width:480px) { .gallery { grid-template-columns:repeat(2,minmax(0,180px)); } }
+    @media(max-width:320px) { .gallery { grid-template-columns:minmax(0,180px); } }
   `],
 })
-export class HaircutGallery {
-  cuts = [
-    {
-      name: 'Crew cut con degradado', image: '/haircuts/crew-cut.jpg',
-      alt: 'Vista lateral de cabello corto arriba y progresivamente más corto en los costados',
-      description: 'Parte superior corta y laterales con transición gradual. Lleva esta referencia para acordar la altura del degradado.',
-      author: 'USMC; recorte de -MiltonPB-', license: 'Dominio público',
-      source: 'https://commons.wikimedia.org/wiki/File:Crew_Cut,_Semi_Short_Taper.jpg',
-      licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/',
-    },
-    {
-      name: 'Undercut', image: '/haircuts/undercut.png',
-      alt: 'Cabello más largo en la parte superior y laterales muy cortos con contraste marcado',
-      description: 'Contraste entre la parte superior y los laterales. El largo de arriba se puede adaptar al peinado que prefieras.',
-      author: 'Pmjn', license: 'CC0',
-      source: 'https://commons.wikimedia.org/wiki/File:Paul_De_La_Cruz_pauldlc_undercut_hair_style.PNG',
-      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
-    },
-    {
-      name: 'Corto natural', image: '/haircuts/buzz-cut.jpg',
-      alt: 'Referencia de cabello de textura rizada llevado corto',
-      description: 'Cabello corto que conserva su textura natural. Acuerda con tu barbero el largo y la definición de los contornos.',
-      author: 'Pacian~commonswiki (atribución indicada en Commons)', license: 'CC BY-SA 3.0',
-      source: 'https://commons.wikimedia.org/wiki/File:African_American_Man.jpg',
-      licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
-    },
-  ];
+export class HaircutGallery implements OnChanges {
+  @Input() styles: string[] = [];
+  @Input() variation = 0;
+  cuts: HaircutReference[] = [];
+  showAll = false;
+  total = HAIRCUT_CATALOG.length;
+  private page = 0;
+  ngOnChanges() { this.page = 0; this.showAll = false; this.refresh(); }
+  next() { this.page++; this.refresh(); }
+  toggleCatalog() { this.showAll = !this.showAll; this.page = 0; this.refresh(); }
+  private refresh() {
+    this.cuts = selectReferences(this.showAll ? ['crew','buzz','undercut','quiff'] : this.styles, this.variation + this.page);
+  }
 }

@@ -16,6 +16,12 @@ import {
   IsIn,
 } from 'class-validator';
 import { AppointmentStatus } from '@prisma/client';
+import { Type } from 'class-transformer';
+
+export class AnalyzeFaceDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1)
+  previousAnalysisId?: number;
+}
 
 export class PersonDto {
   @IsString() @IsNotEmpty() @MaxLength(100) name: string;
