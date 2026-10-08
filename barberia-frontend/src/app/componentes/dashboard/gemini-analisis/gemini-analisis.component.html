@@ -43,6 +43,22 @@
   <!-- Resultado del análisis -->
   <div *ngIf="analysisResult" style="margin-top: 20px; background-color: #1a1a1a; padding: 15px; border-radius: 6px; border-left: 4px solid #4eff91; text-align: left;">
     <strong style="color: #4eff91;">💡 Resultado de la IA:</strong>
-    <p style="margin-top: 5px; color: #e0e0e0; line-height: 1.4;">{{ analysisResult }}</p>
+    <p aria-live="polite" style="margin-top: 5px; color: #e0e0e0; line-height: 1.4; white-space: pre-line;">{{ analysisResult }}</p>
+  </div>
+  <div *ngIf="analysisId" class="recommendation-columns">
+    <section>
+      <h4>1. Referencias de cortes</h4>
+      <p>Ejemplos generados con IA en modelos de referencia.</p>
+      <button type="button" [disabled]="images['reference'].loading" (click)="generateImage('reference')">{{ images['reference'].loading ? 'Generando referencias…' : 'Generar referencias' }}</button>
+      <p *ngIf="images['reference'].error" role="alert">{{ images['reference'].error }}</p>
+      <img *ngIf="images['reference'].url" [src]="images['reference'].url" alt="Referencias generadas de cortes recomendados" />
+    </section>
+    <section>
+      <h4>2. Simulación sobre tu foto</h4>
+      <p>Vista aproximada generada con IA; el resultado real puede variar.</p>
+      <button type="button" [disabled]="images['simulation'].loading" (click)="generateImage('simulation')">{{ images['simulation'].loading ? 'Generando simulación…' : 'Simular cortes en mi foto' }}</button>
+      <p *ngIf="images['simulation'].error" role="alert">{{ images['simulation'].error }}</p>
+      <img *ngIf="images['simulation'].url" [src]="images['simulation'].url" alt="Simulación de los cortes sobre tu foto" />
+    </section>
   </div>
 </div>

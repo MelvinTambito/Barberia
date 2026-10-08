@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { errorMessage } from '../../../core/services/api';
 import { HttpClient } from '@angular/common/http';
+import { Subscription, timeout } from 'rxjs';
 
 @Component({
   selector: 'app-gemini-analisis',
@@ -16,6 +17,19 @@ export class GeminiAnalisisComponent implements OnDestroy {
   selectedImageUrl: string | null = null;
   analysisResult: string | null = null;
   isProcessing: boolean = false;
+  analysisId: number | null = null;
+  images: Record<string, { url: string; loading: boolean; error: string }> = {
+    reference: { url: '', loading: false, error: '' },
+    simulation: { url: '', loading: false, error: '' },
+  };
+  private requests = new Subscription();
+  private requestVersion = 0;
+  private resetAnalysis() {
+    this.requestVersion++;
+    this.requests.unsubscribe(); this.requests = new Subscription();
+    this.analysisId = null; this.isProcessing = false;
+    this.images = { reference: { url: '', loading: false, error: '' }, simulation: { url: '', loading: false, error: '' } };
+  }
 
   // Control para la cámara
   @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
@@ -29,6 +43,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.resetAnalysis();
       this.apagarCamara();
       this.selectedFile = null;
       this.selectedImageUrl = null;
@@ -56,6 +71,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
 
   // 2. Activar la cámara web
   async iniciarCamara() {
+    this.resetAnalysis();
     this.cameraActive = true;
     this.analysisResult = null;
     try {
@@ -116,6 +132,8 @@ export class GeminiAnalisisComponent implements OnDestroy {
   // 5. Enviar imagen y userId al backend de NestJS (/visagism/analyze)
   async enviarImagenGemini() {
     if (!this.selectedFile || this.isProcessing) return;
+    this.resetAnalysis();
+    const version = this.requestVersion;
 
     this.isProcessing = true;
     this.analysisResult = 'Preparando imagen para el análisis…';
@@ -123,7 +141,9 @@ export class GeminiAnalisisComponent implements OnDestroy {
     let image: Blob;
     try {
       image = await this.prepareImage(this.selectedFile);
+      if (version !== this.requestVersion) return;
     } catch {
+      if (version !== this.requestVersion) return;
       this.isProcessing = false;
       this.analysisResult = 'No se pudo preparar la foto. Prueba otro archivo JPG, PNG o WebP.';
       this.cdr.markForCheck();
@@ -135,9 +155,10 @@ export class GeminiAnalisisComponent implements OnDestroy {
     const formData = new FormData();
     formData.append('file', image, 'analisis.jpg');
 
-    this.http.post<any>(environment.apiUrl + '/visagism/analyze', formData).subscribe({
+    this.requests.add(this.http.post<any>(environment.apiUrl + '/visagism/analyze', formData).pipe(timeout(55000)).subscribe({
       next: (response) => {
         this.isProcessing = false;
+        this.analysisId = response.data?.id || null;
         this.analysisResult =
           [response.data?.faceShape, response.data?.recommendations].filter(Boolean).join(': ') ||
           'No se recibió una recomendación.';
@@ -146,14 +167,25 @@ export class GeminiAnalisisComponent implements OnDestroy {
       error: (err) => {
         console.error('Error al conectar con la API:', err);
         this.isProcessing = false;
-        this.analysisResult = err.status === 0
+        this.analysisResult = err.name === 'TimeoutError'
+          ? 'El análisis tardó demasiado. Puedes volver a intentarlo. Si se repite, revisa el registro de POST /visagism/analyze en Vercel.'
+          : err.status === 0
           ? 'No se recibió respuesta del servidor de análisis. Inténtalo otra vez; si persiste, revisa en Vercel el registro de POST /visagism/analyze.'
           : err.status === 413
             ? 'La imagen supera el tamaño permitido por el servidor. Prueba una foto más pequeña.'
             : errorMessage(err);
         this.cdr.markForCheck();
       },
-    });
+    }));
+  }
+
+  generateImage(kind: 'reference' | 'simulation') {
+    if (!this.analysisId || this.images[kind].loading) return;
+    this.images[kind] = { url: '', loading: true, error: '' };
+    this.requests.add(this.http.post<{ imageUrl: string }>(`${environment.apiUrl}/visagism/${this.analysisId}/image`, { kind }).pipe(timeout(55000)).subscribe({
+      next: response => { this.images[kind] = { url: response.imageUrl, loading: false, error: '' }; this.cdr.markForCheck(); },
+      error: err => { this.images[kind] = { url: '', loading: false, error: err.name === 'TimeoutError' ? 'La imagen tardó demasiado. Vuelve a intentarlo.' : err.status === 0 ? 'No se recibió la imagen del servidor. Inténtalo de nuevo.' : errorMessage(err) }; this.cdr.markForCheck(); },
+    }));
   }
 
   private async prepareImage(file: File): Promise<Blob> {
@@ -180,6 +212,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
+    this.resetAnalysis();
     this.apagarCamara();
   }
 }
