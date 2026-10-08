@@ -1,0 +1,343 @@
+<app-navigation />
+<section class="hero-card">
+  <div>
+    <p class="hero-subtitle">★ BARBERÍA TRADICIONAL ★</p>
+    <h2 class="hero-title">{{ titles[page] }}</h2>
+    <p class="hero-description">
+      {{
+        page === 'citas'
+          ? 'Reserva tu horario y consulta el estado de tus citas. Horario: 11:00 a 19:30.'
+          : 'Gestión & club de lealtad'
+      }}
+    </p>
+  </div>
+</section>
+<p *ngIf="loading" class="notice" role="status">Cargando información…</p>
+<p *ngIf="error" class="notice error" role="alert">
+  {{ error }} <button class="btn-restore" (click)="load()">Reintentar</button>
+</p>
+<p *ngIf="message" class="notice" role="status">{{ message }}</p>
+<ng-container *ngIf="me && !loading">
+  <section *ngIf="page === 'barberos'" class="workspace">
+    <button *ngIf="admin" class="btn-hero-red" (click)="editPerson()">+ REGISTRAR BARBERO</button>
+    <form *ngIf="showPerson" #pf="ngForm" (ngSubmit)="savePerson()">
+      <h3>{{ editingPerson ? 'Editar' : 'Nuevo' }} barbero</h3>
+      <div class="fields">
+        <label>Nombre<input name="name" [(ngModel)]="person.name" required maxlength="100" /></label
+        ><label
+          >Correo de Google<input
+            name="email"
+            type="email"
+            [(ngModel)]="person.email"
+            required
+            email /></label
+        ><label>Teléfono<input name="phone" [(ngModel)]="person.phone" maxlength="30" /></label>
+      </div>
+      <div class="actions">
+        <button class="btn-hero-red" [disabled]="pf.invalid || saving">Guardar</button
+        ><button type="button" class="btn-hero-outline" (click)="showPerson = false">
+          Cancelar
+        </button>
+      </div>
+    </form>
+    <div class="cards">
+      <article class="metric-card" *ngFor="let b of admin ? people : barbers">
+        <h3>✂️ {{ b.name }}</h3>
+        <div class="actions">
+          <a class="btn-hero-outline" routerLink="/citas" [queryParams]="{ barberoId: b.id }"
+            >AGENDAR CITA</a
+          ><button *ngIf="admin" class="btn-hero-outline" (click)="editPerson($any(b))">
+            Editar
+          </button>
+        </div>
+      </article>
+    </div>
+    <p *ngIf="!barbers.length">Todavía no hay barberos disponibles.</p>
+  </section>
+  <section *ngIf="page === 'servicios'" class="workspace">
+    <button *ngIf="admin" class="btn-hero-red" (click)="editService()">+ NUEVO SERVICIO</button>
+    <form *ngIf="showService" #sf="ngForm" (ngSubmit)="saveService()">
+      <h3>{{ editingService ? 'Editar' : 'Nuevo' }} servicio</h3>
+      <div class="fields">
+        <label
+          >Nombre<input name="name" [(ngModel)]="service.name" required maxlength="100" /></label
+        ><label
+          >Descripción<input
+            name="description"
+            [(ngModel)]="service.description"
+            maxlength="1000" /></label
+        ><label
+          >Precio (Q)<input
+            name="price"
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="service.price"
+            required /></label
+        ><label
+          >Duración (minutos)<input
+            name="duration"
+            type="number"
+            min="5"
+            max="480"
+            step="1"
+            [(ngModel)]="service.durationMinutes"
+            required /></label
+        ><label
+          >Puntos para canjear (opcional)<input
+            name="points"
+            type="number"
+            min="1"
+            step="1"
+            [(ngModel)]="service.requiredPoints"
+        /></label>
+      </div>
+      <button class="btn-hero-red" [disabled]="sf.invalid || saving">Guardar</button>
+      <button type="button" class="btn-hero-outline" (click)="showService = false">Cancelar</button>
+    </form>
+    <div class="cards">
+      <article class="metric-card" *ngFor="let s of services">
+        <h3>{{ s.name }}</h3>
+        <p>{{ s.description }}</p>
+        <p class="gold-text">Q{{ s.price | number: '1.2-2' }} · {{ s.durationMinutes }} minutos</p>
+        <p *ngIf="s.requiredPoints">Canje: {{ s.requiredPoints }} puntos</p>
+        <div class="actions">
+          <a class="btn-hero-red" routerLink="/citas" [queryParams]="{ servicioId: s.id }"
+            >AGENDAR</a
+          ><button *ngIf="admin" class="btn-hero-outline" (click)="editService(s)">Editar</button>
+        </div>
+      </article>
+    </div>
+    <p *ngIf="!services.length">No hay servicios disponibles.</p>
+  </section>
+  <ng-container *ngIf="page === 'citas'">
+    <section class="workspace">
+      <h3>Agendar cita</h3>
+      <form #bf="ngForm" (ngSubmit)="book()">
+        <div class="fields">
+          <label *ngIf="staff"
+            >Cliente<select
+              name="client"
+              [(ngModel)]="booking.clientId"
+              (ngModelChange)="booking.paidWithPoints = false"
+              required
+            >
+              <option [ngValue]="0" disabled>Selecciona un cliente</option>
+              <option *ngFor="let p of people" [ngValue]="p.id">{{ p.name }}</option>
+              <option *ngIf="!people.length" [ngValue]="me.id">{{ me.name }}</option>
+            </select></label
+          ><label
+            >Barbero<select
+              name="barber"
+              [(ngModel)]="booking.barberId"
+              (ngModelChange)="availability()"
+              required
+            >
+              <option [ngValue]="0" disabled>Selecciona un barbero</option>
+              <option *ngFor="let b of barbers" [ngValue]="b.id">{{ b.name }}</option>
+            </select></label
+          ><label
+            >Servicio<select
+              name="service"
+              [(ngModel)]="booking.serviceId"
+              (ngModelChange)="booking.paidWithPoints = false; availability()"
+              required
+            >
+              <option [ngValue]="0" disabled>Selecciona un servicio</option>
+              <option *ngFor="let s of services" [ngValue]="s.id">
+                {{ s.name }} — Q{{ s.price }}
+              </option>
+            </select></label
+          ><label
+            >Fecha<input
+              name="date"
+              type="date"
+              [min]="today"
+              [(ngModel)]="booking.date"
+              (ngModelChange)="availability()"
+              required /></label
+          ><label
+            >Hora<select name="time" [(ngModel)]="booking.time" required [disabled]="slotLoading">
+              <option value="">{{ slotLoading ? 'Consultando…' : 'Selecciona un horario' }}</option>
+              <option *ngFor="let s of slots" [value]="s.time">{{ s.time }}</option>
+            </select></label
+          >
+        </div>
+        <p *ngIf="booking.barberId && booking.serviceId && !slots.length && !slotLoading">
+          No hay horarios disponibles para esta selección.
+        </p>
+        <label class="check"
+          ><input
+            type="checkbox"
+            name="redeem"
+            [(ngModel)]="booking.paidWithPoints"
+            [disabled]="!canRedeem"
+          />Pagar con puntos (saldo: {{ selectedClient.points || 0 }}; requeridos:
+          {{ selectedService?.requiredPoints || 'no disponible' }})</label
+        >
+        <div class="actions">
+          <button
+            class="btn-hero-red"
+            [disabled]="
+              bf.invalid ||
+              saving ||
+              !booking.barberId ||
+              !booking.serviceId ||
+              !booking.time ||
+              (booking.paidWithPoints && !canRedeem)
+            "
+          >
+            {{ saving ? 'Guardando…' : 'CONFIRMAR CITA' }}
+          </button>
+        </div>
+      </form>
+    </section>
+    <section class="workspace">
+      <h3>{{ staff ? 'Agenda de citas' : 'Mis citas' }}</h3>
+      <label
+        >Buscar<input [(ngModel)]="filter" placeholder="Cliente, barbero, servicio o estado"
+      /></label>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>FECHA Y HORA</th>
+              <th>CLIENTE / BARBERO</th>
+              <th>SERVICIO</th>
+              <th>ESTADO</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of filtered">
+              <td>{{ a.startTime | date: 'dd/MM/yyyy HH:mm' : '-0600' }}</td>
+              <td>
+                {{ a.client.name }}<br /><span class="muted">{{ a.barber.name }}</span>
+              </td>
+              <td>
+                {{ a.service.name }}<br />{{
+                  a.paidWithPoints ? 'Canje de puntos' : 'Q' + a.chargedPrice
+                }}
+              </td>
+              <td>{{ status(a.status) }}</td>
+              <td>
+                <div class="actions" *ngIf="active(a)">
+                  <button
+                    *ngIf="staff && a.status === 'PENDING'"
+                    class="btn-hero-outline"
+                    [disabled]="saving"
+                    (click)="change(a, 'CONFIRMED')"
+                  >
+                    Confirmar</button
+                  ><button
+                    *ngIf="staff && started(a)"
+                    class="btn-hero-outline"
+                    [disabled]="saving"
+                    (click)="change(a, 'COMPLETED')"
+                  >
+                    Completar</button
+                  ><button
+                    *ngIf="staff && started(a)"
+                    class="btn-hero-outline"
+                    [disabled]="saving"
+                    (click)="change(a, 'NO_SHOW')"
+                  >
+                    No asistió</button
+                  ><button
+                    class="btn-hero-outline"
+                    [disabled]="saving"
+                    (click)="change(a, 'CANCELLED')"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p *ngIf="!filtered.length">No hay citas para mostrar.</p>
+    </section>
+  </ng-container>
+  <section *ngIf="page === 'fidelizacion'" class="workspace">
+    <h3>{{ staff ? 'Puntos de la clientela' : 'Mis puntos' }}</h3>
+    <p>
+      Las citas completadas acumulan un punto por cada quetzal del servicio. Los canjes no acumulan
+      puntos. Puedes usar tu saldo al agendar.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>CLIENTE</th>
+            <th>PUNTOS</th>
+            <th>VISITAS</th>
+            <th>INASISTENCIAS</th>
+            <th>ESTADO</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of people">
+            <td>{{ p.name }}</td>
+            <td class="gold-text">{{ p.points }}</td>
+            <td>{{ p.clientAppointments?.length || 0 }}</td>
+            <td>{{ p.strikes }}</td>
+            <td>
+              {{ p.accountStatus === 'ACTIVE' ? 'Activo' : 'Bloqueado'
+              }}<button
+                *ngIf="admin && p.accountStatus === 'BLOCKED'"
+                class="btn-hero-outline"
+                [disabled]="saving"
+                (click)="reactivate(p)"
+              >
+                Reactivar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Servicios para canjear</h3>
+    <div class="cards">
+      <ng-container *ngFor="let s of services"
+        ><article class="metric-card" *ngIf="s.requiredPoints">
+          <h3>{{ s.name }}</h3>
+          <p class="gold-text">{{ s.requiredPoints }} puntos</p>
+          <a class="btn-hero-outline" routerLink="/citas" [queryParams]="{ servicioId: s.id }"
+            >AGENDAR CANJE</a
+          >
+        </article></ng-container
+      >
+    </div>
+    <h3>Historial de canjes</h3>
+    <ng-container *ngFor="let a of appointments"
+      ><p *ngIf="a.paidWithPoints">
+        {{ a.startTime | date: 'dd/MM/yyyy' : '-0600' }} · {{ a.client.name }} ·
+        {{ a.service.name }} · {{ status(a.status) }}
+      </p></ng-container
+    >
+    <p class="muted">Los puntos de las citas canceladas se devuelven al saldo.</p>
+  </section>
+  <section class="workspace" *ngIf="page === 'servicios' || page === 'fidelizacion'">
+    <h3>Asistente de la barbería</h3>
+    <p class="chat-message" *ngFor="let m of messages">
+      <strong>{{ m.who }}:</strong> {{ m.text }}
+    </p>
+    <form (ngSubmit)="send()">
+      <label
+        >Tu consulta<textarea
+          name="message"
+          [(ngModel)]="chatText"
+          maxlength="2000"
+          rows="2"
+          placeholder="Consulta precios, servicios y recomendaciones"
+        ></textarea>
+      </label>
+      <div class="actions">
+        <button class="btn-hero-red" [disabled]="chatting || !chatText.trim()">
+          {{ chatting ? 'Consultando…' : 'Enviar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</ng-container>

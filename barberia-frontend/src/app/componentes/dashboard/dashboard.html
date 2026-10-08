@@ -1,62 +1,37 @@
 <div class="app-container">
-  <!-- Top Bar Decorativa -->
-  <div class="top-bar">
-    <div class="top-bar-left">
-      <span>💈 <strong>BARBERÍA TRADICIONAL</strong></span>
-      <span class="divider">|</span>
-      <span>Horario: 09:00 - 20:00 • Navaja, Toalla Caliente & Tijera Clásica</span>
-    </div>
-    <div class="top-bar-right">
-      <span class="gold-text">★ Calidad & Oficio Tradicional desde 2026 ★</span>
-      <button type="button" class="btn-restore" (click)="cerrarSesion()">CERRAR SESIÓN</button>
-    </div>
-  </div>
-
-  <!-- Header & Menú Principal -->
-  <header class="main-header">
-    <div class="brand-box">
-      <div class="brand-icon">✂️</div>
-      <div class="brand-text">
-        <h1>BARBER APP</h1>
-        <p>GESTIÓN & CLUB DE LEALTAD</p>
-      </div>
-    </div>
-
-    <nav class="nav-menu">
-      <button type="button" class="nav-item active" routerLink="/dashboard">📊 DASHBOARD</button>
-      <button type="button" class="nav-item" routerLink="/clientes">👥 CLIENTES</button>
-      <button type="button" class="nav-item" routerLink="/barberos">✂️ BARBEROS</button>
-      <button type="button" class="nav-item" routerLink="/servicios">🧹 SERVICIOS</button>
-      <button type="button" class="nav-item" routerLink="/citas">
-        📅 AGENDAR CITA <span class="badge">4 HOY</span>
-      </button>
-      <button type="button" class="nav-item" routerLink="/fidelizacion">
-        🏅 FIDELIZACIÓN <span class="gold-badge">PUNTOS</span>
-      </button>
-      <button type="button" class="btn-primary-action" routerLink="/citas">
-        ✂️ + AGENDAR CITA
-      </button>
-    </nav>
-  </header>
-
+  <app-navigation />
+  <p *ngIf="loading" class="notice">Cargando resumen…</p>
+  <p *ngIf="error" class="notice error" role="alert">{{ error }}</p>
   <!-- Banner Hero Principal -->
   <section class="hero-card">
     <div class="hero-content">
-      <p class="hero-subtitle">★ LIBRO MAYOR & CONTROL DIARIO ★ • <i>Sábado, 5 de Septiembre 2026</i></p>
+      <p class="hero-subtitle">
+        ★ LIBRO MAYOR & CONTROL DIARIO ★ • <i>{{ today | date: 'dd/MM/yyyy' : '-0600' }}</i>
+      </p>
       <h2 class="hero-title">Barbería <span class="highlight-red">Tradicional</span></h2>
       <p class="hero-description">
-        Gestión artesanal de turnos en sillón, cuidado de la clientela y programa de recompensas por fidelidad.
+        Gestión artesanal de turnos en sillón, cuidado de la clientela y programa de recompensas por
+        fidelidad.
       </p>
     </div>
     <div class="hero-actions">
       <button type="button" class="btn-hero-red" routerLink="/citas">✂️ AGENDAR CITA</button>
-      <button type="button" class="btn-hero-outline" routerLink="/clientes">👥 NUEVO CLIENTE</button>
-      <button type="button" class="btn-hero-outline" routerLink="/fidelizacion">🏅 CLUB FIDELIDAD</button>
+      <button
+        type="button"
+        class="btn-hero-outline"
+        routerLink="/clientes"
+        [queryParams]="{ nuevo: 1 }"
+      >
+        👥 NUEVO CLIENTE
+      </button>
+      <button type="button" class="btn-hero-outline" routerLink="/fidelizacion">
+        🏅 CLUB FIDELIDAD
+      </button>
     </div>
   </section>
 
   <!-- SECCIÓN NUEVA: Análisis Inteligente con Gemini -->
-   <section class="gemini-section" style="margin: 30px 0;">
+  <section class="gemini-section" style="margin: 30px 0">
     <app-gemini-analisis></app-gemini-analisis>
   </section>
 
@@ -69,9 +44,10 @@
         <a class="card-link" routerLink="/citas">VER LIBRO ↗</a>
       </div>
       <p class="card-label">CITAS EN SILLÓN HOY</p>
-      <div class="metric-value">4 <span>agendadas</span></div>
+      <div class="metric-value">{{ total }} <span>agendadas</span></div>
       <div class="card-footer">
-        <span class="status-pending">4 pendientes</span> • <span class="status-done">1 concluida</span>
+        <span class="status-pending">{{ pending }} pendientes</span> •
+        <span class="status-done">{{ completed }} concluidas</span>
       </div>
     </div>
 
@@ -82,9 +58,9 @@
         <a class="card-link" routerLink="/clientes">PADRÓN ↗</a>
       </div>
       <p class="card-label">PARROQUIANOS / CLIENTES</p>
-      <div class="metric-value">4 <span class="status-active">activos</span></div>
+      <div class="metric-value">{{ clients }} <span class="status-active">registrados</span></div>
       <div class="card-footer">
-        <span class="status-trend">📈 13 visitas registradas</span>
+        <span class="status-trend">📈 {{ visits }} visitas registradas</span>
       </div>
     </div>
 
@@ -95,9 +71,12 @@
         <a class="card-link" routerLink="/fidelizacion">FIDELIDAD ↗</a>
       </div>
       <p class="card-label">PUNTOS DE TRADICIÓN</p>
-      <div class="metric-value gold-text">345 <span class="sub-label">pts totales</span></div>
+      <div class="metric-value gold-text">
+        {{ points }} <span class="sub-label">pts totales</span>
+      </div>
       <div class="card-footer">
-        En saldo: <strong>245 pts</strong> <span class="red-text">100 canjeados</span>
+        En saldo: <strong>{{ points }} pts</strong>
+        <span class="red-text">{{ redeemed }} canjeados</span>
       </div>
     </div>
 
@@ -107,10 +86,10 @@
         <span class="card-icon">🏅</span>
         <a class="card-link" routerLink="/fidelizacion">PREMIOS ↗</a>
       </div>
-      <p class="card-label">CUPONES DE DESCUENTO</p>
-      <div class="metric-value">3 <span>canjeados</span></div>
+      <p class="card-label">CANJES DE SERVICIOS</p>
+      <div class="metric-value">{{ redemptions }} <span>canjeados</span></div>
       <div class="card-footer">
-        <span class="status-done">1 cupones válidos</span> para aplicar
+        <span class="status-done">{{ activeRedemptions }} canjes pendientes</span> para aplicar
       </div>
     </div>
   </section>

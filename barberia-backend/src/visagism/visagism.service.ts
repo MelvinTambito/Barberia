@@ -1,63 +1,62 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { GoogleGenAI } from '@google/genai';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
+import { generateAi } from '../common/generate-ai';
 @Injectable()
 export class VisagismService {
-  private ai: GoogleGenAI;
-
-  constructor(private readonly prisma: PrismaService) {
-    this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  }
-
-  async analyzeFace(userId: string | number, imageFile: any) {
-    try {
-      const base64Image = imageFile.buffer.toString('base64');
-
-      const prompt = `
-        Analiza esta imagen de un rostro para un servicio de barbería/visagismo.
-        Devuelve ÚNICAMENTE un objeto JSON válido con este formato exacto (sin bloques de código markdown ni texto adicional):
+  constructor(private readonly prisma: PrismaService) {}
+  async analyzeFace(userId: number, file: any) {
+    const response = await generateAi({
+      contents: [
         {
-          "faceShape": "Ovalado",
-          "recommendations": "Descripción detallada de los mejores cortes de cabello y barba recomendados según esta forma de rostro."
-        }
-      `;
-
-      const response = await this.ai.models.generateContent({
-       model: 'gemini-3.8-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              { inlineData: { mimeType: imageFile.mimetype, data: base64Image } },
-            ],
-          },
-        ],
-      });
-
-      const responseText = (response.text || '').replace(/```json|```/g, '').trim();
-      const parsedData = JSON.parse(responseText);
-
-      // Conversión a Int para que coincida con tu Schema de Prisma
-      const numericUserId = Number(userId);
-
-      const analysis = await this.prisma.facialAnalysis.create({
-        data: {
-          userId: numericUserId,
-          faceShape: parsedData.faceShape,
-          recommendations: parsedData.recommendations,
-          imageUrl: `data:${imageFile.mimetype};base64,${base64Image}`,
+          role: 'user',
+          parts: [
+            {
+              text: 'Recomienda cortes de cabello y barba para el rostro de la imagen, en español. Si no hay un rostro visible, indícalo sin inventar características. Responde JSON con faceShape y recommendations.',
+            },
+            {
+              inlineData: {
+                mimeType: file.mimetype,
+                data: file.buffer.toString('base64'),
+              },
+            },
+          ],
         },
-      });
-
-      return {
-        success: true,
-        data: analysis,
-      };
-    } catch (error) {
-      console.error('Error en visagismo:', error);
-      throw new InternalServerErrorException('Error al procesar el análisis facial con IA');
+      ],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            faceShape: { type: 'STRING' },
+            recommendations: { type: 'STRING' },
+          },
+          required: ['faceShape', 'recommendations'],
+        },
+      },
+    });
+    let result: any;
+    try {
+      result = JSON.parse(response.text || '');
+    } catch {
+      throw new ServiceUnavailableException(
+        'No se pudo interpretar el análisis. Inténtalo de nuevo.',
+      );
     }
+    if (
+      typeof result.faceShape !== 'string' ||
+      typeof result.recommendations !== 'string'
+    )
+      throw new ServiceUnavailableException(
+        'La respuesta de IA está incompleta. Inténtalo de nuevo.',
+      );
+    const data = await this.prisma.facialAnalysis.create({
+      data: {
+        userId,
+        faceShape: result.faceShape,
+        recommendations: result.recommendations,
+        imageUrl: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+      },
+    });
+    return { success: true, data };
   }
 }

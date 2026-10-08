@@ -1,0 +1,45 @@
+<!-- Top Bar Decorativa -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <span>💈 <strong>BARBERÍA TRADICIONAL</strong></span>
+    <span class="divider">|</span>
+    <span>Horario: 11:00 - 19:30 • Navaja, Toalla Caliente & Tijera Clásica</span>
+  </div>
+  <div class="top-bar-right">
+    <span class="gold-text">★ Calidad & Oficio Tradicional desde 2026 ★</span>
+    <button type="button" class="btn-restore" (click)="auth.logout()">CERRAR SESIÓN</button>
+  </div>
+</div>
+
+<!-- Header & Menú Principal -->
+<header class="main-header">
+  <div class="brand-box">
+    <div class="brand-icon">✂️</div>
+    <div class="brand-text">
+      <h1>BARBER APP</h1>
+      <p>GESTIÓN & CLUB DE LEALTAD</p>
+    </div>
+  </div>
+
+  <nav class="nav-menu">
+    <button type="button" class="nav-item" routerLinkActive="active" routerLink="/dashboard">
+      📊 DASHBOARD
+    </button>
+    <button type="button" class="nav-item" routerLinkActive="active" routerLink="/clientes">
+      👥 CLIENTES
+    </button>
+    <button type="button" class="nav-item" routerLinkActive="active" routerLink="/barberos">
+      ✂️ BARBEROS
+    </button>
+    <button type="button" class="nav-item" routerLinkActive="active" routerLink="/servicios">
+      🧹 SERVICIOS
+    </button>
+    <button type="button" class="nav-item" routerLinkActive="active" routerLink="/citas">
+      📅 AGENDAR CITA
+    </button>
+    <button type="button" class="nav-item" routerLinkActive="active" routerLink="/fidelizacion">
+      🏅 FIDELIZACIÓN <span class="gold-badge">PUNTOS</span>
+    </button>
+    <button type="button" class="btn-primary-action" routerLink="/citas">✂️ + AGENDAR CITA</button>
+  </nav>
+</header>

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-
+import { Router, ActivatedRoute } from '@angular/router';
+import { Api, Person, Appointment, errorMessage } from '../../core/services/api';
+import { Navigation } from '../../shared/navigation';
 interface Cliente {
   id: number;
   nombre: string;
@@ -15,93 +16,142 @@ interface Cliente {
   puntos: number;
   visitas: number;
 }
-
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Navigation],
   templateUrl: './clientes.html',
-  styleUrl: './clientes.css'
+  styleUrls: ['./clientes.css', '../../shared/forms.css'],
 })
 export class Clientes implements OnInit {
-  filtro: string = '';
-
-  listaClientes: Cliente[] = [
-    {
-      id: 1,
-      nombre: 'Carlos Mendoza',
-      iniciales: 'CM',
-      fechaIngreso: '2025-11-10',
-      telefono: '+502 5412-8890',
-      email: 'carlos.mendoza@gmail.com',
-      nivel: 'MIEMBRO PLATA',
-      claseNivel: 'level-plata',
-      puntos: 75,
-      visitas: 4
-    },
-    {
-      id: 2,
-      nombre: 'Alejandro Morales',
-      iniciales: 'AM',
-      fechaIngreso: '2026-01-15',
-      telefono: '+502 4190-3321',
-      email: 'amorales.gt@outlook.com',
-      nivel: 'MIEMBRO TRADICIONAL',
-      claseNivel: 'level-tradicional',
-      puntos: 35,
-      visitas: 2
-    },
-    {
-      id: 3,
-      nombre: 'Javier Ruiz',
-      iniciales: 'JR',
-      fechaIngreso: '2025-08-04',
-      telefono: '+502 5831-7744',
-      email: 'javi.ruiz92@gmail.com',
-      nivel: 'CABALLERO VIP ORO',
-      claseNivel: 'level-oro',
-      puntos: 120,
-      visitas: 6
-    }
-  ];
-
+  filtro = '';
+  listaClientes: Cliente[] = [];
   clientesFiltrados: Cliente[] = [];
-
-  constructor(private router: Router) {}
-
-  ngOnInit() {
-    this.clientesFiltrados = [...this.listaClientes];
+  me!: Person;
+  error = '';
+  loading = true;
+  saving = false;
+  showForm = false;
+  editing: number | null = null;
+  message = '';
+  history: Appointment[] | null = null;
+  person = { name: '', email: '', phone: '' };
+  constructor(
+    private router: Router,
+    private api: Api,
+    private route: ActivatedRoute,
+  ) {}
+  get staff() {
+    return this.me?.role === 'ADMIN' || this.me?.role === 'BARBER';
   }
-
+  get totalPoints() {
+    return this.listaClientes.reduce((sum, c) => sum + c.puntos, 0);
+  }
+  ngOnInit() {
+    this.api.get<Person>('/users/me').subscribe({
+      next: (p) => {
+        this.me = p;
+        if (this.staff && this.route.snapshot.queryParamMap.has('nuevo'))
+          this.abrirModalNuevoCliente();
+      },
+      error: (e) => (this.error = errorMessage(e)),
+    });
+    this.load();
+  }
+  load() {
+    this.loading = true;
+    this.api.get<Person[]>('/users').subscribe({
+      next: (rows) => {
+        this.listaClientes = rows.map((p) => ({
+          id: p.id,
+          nombre: p.name,
+          iniciales: p.name
+            .split(' ')
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join(''),
+          fechaIngreso: new Date(p.createdAt).toLocaleDateString('es-GT'),
+          telefono: p.phone || 'Sin teléfono',
+          email: p.email,
+          nivel: p.accountStatus === 'ACTIVE' ? 'ACTIVO' : 'BLOQUEADO',
+          claseNivel: 'level-tradicional',
+          puntos: p.points,
+          visitas: p.clientAppointments?.length || 0,
+        }));
+        this.filtrarClientes();
+        this.loading = false;
+      },
+      error: (e) => {
+        this.error = errorMessage(e);
+        this.loading = false;
+      },
+    });
+  }
   filtrarClientes() {
-    const term = this.filtro.toLowerCase().trim();
-    if (!term) {
-      this.clientesFiltrados = [...this.listaClientes];
-      return;
-    }
-
-    this.clientesFiltrados = this.listaClientes.filter(c =>
-      c.nombre.toLowerCase().includes(term) ||
-      c.telefono.includes(term) ||
-      c.email.toLowerCase().includes(term)
+    const t = this.filtro.toLowerCase().trim();
+    this.clientesFiltrados = this.listaClientes.filter((c) =>
+      (c.nombre + ' ' + c.telefono + ' ' + c.email).toLowerCase().includes(t),
     );
   }
-
   navegarA(ruta: string) {
     this.router.navigate([ruta]);
   }
-
-  cerrarSesion() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    this.router.navigate(['/login']);
-  }
-
   abrirModalNuevoCliente() {
-    alert('Formulario de registro de cliente.');
+    this.editing = null;
+    this.person = { name: '', email: '', phone: '' };
+    this.showForm = true;
+    this.error = '';
   }
-
-  agendarParaCliente(cliente: Cliente) {
-    this.router.navigate(['/citas'], { queryParams: { clienteId: cliente.id } });
+  editar(c: Cliente) {
+    this.editing = c.id;
+    this.person = {
+      name: c.nombre,
+      email: c.email,
+      phone: c.telefono === 'Sin teléfono' ? '' : c.telefono,
+    };
+    this.showForm = true;
+    this.error = '';
+  }
+  guardar() {
+    if (this.saving) return;
+    this.saving = true;
+    this.error = '';
+    const req = this.editing
+      ? this.api.patch('/users/' + this.editing, this.person)
+      : this.api.post('/users', this.person);
+    req.subscribe({
+      next: () => {
+        this.saving = false;
+        this.showForm = false;
+        this.message = 'Cliente guardado';
+        this.load();
+      },
+      error: (e) => {
+        this.error = errorMessage(e);
+        this.saving = false;
+      },
+    });
+  }
+  historial(c: Cliente) {
+    this.error = '';
+    this.api
+      .get<Appointment[]>('/appointments?clientId=' + c.id)
+      .subscribe({ next: (r) => (this.history = r), error: (e) => (this.error = errorMessage(e)) });
+  }
+  agendarParaCliente(c: Cliente) {
+    this.router.navigate(['/citas'], { queryParams: { clienteId: c.id } });
+  }
+  estado(s: string) {
+    return (
+      (
+        {
+          PENDING: 'Pendiente',
+          CONFIRMED: 'Confirmada',
+          COMPLETED: 'Completada',
+          CANCELLED: 'Cancelada',
+          NO_SHOW: 'No asistió',
+        } as Record<string, string>
+      )[s] || s
+    );
   }
 }

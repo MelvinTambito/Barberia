@@ -1,13 +1,15 @@
 import { Component, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { errorMessage } from '../../../core/services/api';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-gemini-analisis',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule],
   templateUrl: './gemini-analisis.component.html',
-  styleUrls: ['./gemini-analisis.component.css']
+  styleUrls: ['./gemini-analisis.component.css'],
 })
 export class GeminiAnalisisComponent implements OnDestroy {
   selectedFile: File | null = null;
@@ -27,9 +29,13 @@ export class GeminiAnalisisComponent implements OnDestroy {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) {
+        this.analysisResult = 'Usa una imagen JPG, PNG o WebP de hasta 5 MB.';
+        return;
+      }
       this.selectedFile = file;
       this.analysisResult = null;
-      
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedImageUrl = e.target.result;
@@ -50,8 +56,8 @@ export class GeminiAnalisisComponent implements OnDestroy {
         }
       }, 100);
     } catch (error) {
-      console.error("No se pudo acceder a la cámara:", error);
-      alert("Error al encender la cámara. Revisa los permisos del navegador.");
+      console.error('No se pudo acceder a la cámara:', error);
+      alert('Error al encender la cámara. Revisa los permisos del navegador.');
       this.cameraActive = false;
     }
   }
@@ -62,14 +68,14 @@ export class GeminiAnalisisComponent implements OnDestroy {
     const canvas = this.canvasElement.nativeElement;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+
       canvas.toBlob((blob) => {
         if (blob) {
-          this.selectedFile = new File([blob], "captura-webcam.jpg", { type: "image/jpeg" });
+          this.selectedFile = new File([blob], 'captura-webcam.jpg', { type: 'image/jpeg' });
           this.selectedImageUrl = canvas.toDataURL('image/jpeg');
           this.apagarCamara();
         }
@@ -80,7 +86,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
   // 4. Apagar la cámara web de manera segura
   apagarCamara() {
     if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream.getTracks().forEach((track) => track.stop());
       this.mediaStream = null;
     }
     this.cameraActive = false;
@@ -91,22 +97,23 @@ export class GeminiAnalisisComponent implements OnDestroy {
     if (!this.selectedFile) return;
 
     this.isProcessing = true;
-    this.analysisResult = "Analizando facciones y recomendando estilos con Gemini...";
+    this.analysisResult = 'Analizando facciones y recomendando estilos con Gemini...';
 
     const formData = new FormData();
     formData.append('file', this.selectedFile); // Campo requerido por Swagger
-    formData.append('userId', '1');             // Campo userId requerido por Swagger
 
-    this.http.post<any>('http://localhost:3000/visagism/analyze', formData).subscribe({
+    this.http.post<any>(environment.apiUrl + '/visagism/analyze', formData).subscribe({
       next: (response) => {
         this.isProcessing = false;
-        this.analysisResult = response.resultado || response.analisis || response.message || "Análisis completado exitosamente.";
+        this.analysisResult =
+          [response.data?.faceShape, response.data?.recommendations].filter(Boolean).join(': ') ||
+          'No se recibió una recomendación.';
       },
       error: (err) => {
-        console.error("Error al conectar con la API:", err);
+        console.error('Error al conectar con la API:', err);
         this.isProcessing = false;
-        this.analysisResult = "Error al conectar con el servicio de Visagismo en el backend.";
-      }
+        this.analysisResult = errorMessage(err);
+      },
     });
   }
 

@@ -1,26 +1,82 @@
-# Al clonar, en la dirección del barbería-backend:
-  Para abrir prisma
-  npx prisma studio
+# Ejecutar el backend localmente
 
+Requisitos: Node.js compatible con el proyecto y PostgreSQL en ejecución.
 
-  ## Pasos para levantar el proyecto localmente
-1. # Instalar dependencias:
-     npm install
-2. # Configurar base de datos y entorno:
-  Crear un archivo .env basado en .env.example que está en el repositorio, solo le quitan el ,example al nombre del archivo, las credenciales las mandaré al grupo de wsp.
+1. Desde esta carpeta, ejecutar `npm ci`.
+2. Copiar `.env.example` a `.env` y completar las credenciales propias.
+   No sobrescribir un `.env` existente ni subirlo a GitHub.
+3. Crear una base PostgreSQL de desarrollo vacía llamada `corte26`.
+4. Ejecutar `npx prisma generate` y `npx prisma migrate deploy`.
+5. Opcional, solo en una base de pruebas: `npx prisma db seed`.
+   ATENCIÓN: el seed actual borra usuarios, servicios, citas y registros existentes.
+6. Ejecutar `npm run start:dev`.
 
-  Levantar el servicio de PostgreSQL local.
-  Ejecutar las migraciones y sembrar datos de prueba:
-    npx prisma migrate dev
-    npx prisma db seed
+API: http://localhost:3000
+Documentación: http://localhost:3000/api/docs
+Frontend: en otra terminal, ir a `../barberia-frontend` y ejecutar `npm start`.
+Abrir http://localhost:4200.
 
-  //Si no tienen instaladas las herramientas de Prisma, no funcionará, deben instalarlas.
+## Credenciales
 
-3. # Configurar base de datos y entorno:
-  Iniciar el servidor
-  npm run start:dev
+- `DATABASE_URL`: conexión a la base PostgreSQL propia. Codificar los caracteres
+  especiales de usuario/contraseña cuando se incluyan en la URL.
+- `JWT_SECRET`: clave aleatoria propia para firmar sesiones.
+- `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`: cliente OAuth de tipo Aplicación web
+  creado en Google Cloud / Google Auth Platform.
+- `GOOGLE_CALLBACK_URL`: http://localhost:3000/auth/google/callback.
+  Registrar esa misma URI en el cliente OAuth de Google.
+- `GEMINI_API_KEY`: clave personal de Google AI Studio para el chatbot y visagismo.
 
-4. # Documentación de la API: 
-  Una vez corriendo, visitar http://localhost:3000/api/docs.
+El backend actual requiere las credenciales de Google y Gemini para iniciar.
+La carga de `.env` se realiza al arrancar el backend.
 
-  
+## Trabajo en equipo
+
+Compartir el código, `package-lock.json`, `.env.example` y las migraciones de Prisma.
+Cada integrante mantiene su propio `.env` y sus datos locales.
+Después de descargar cambios, ejecutar `npm ci` si cambiaron dependencias,
+`npx prisma generate` y `npx prisma migrate deploy` si cambiaron modelos/migraciones.
+Quien modifique modelos debe crear y revisar una migración con
+`npx prisma migrate dev --name descripcion` en su base de desarrollo y subirla.
+No ejecutar `db seed` sobre datos que se quieran conservar.
+
+En Windows se puede usar `npm.cmd` y `npx.cmd` si PowerShell bloquea los scripts.
+Desde la carpeta raíz, VS Code ofrece Terminal > Ejecutar tarea >
+Frontend: iniciar / Backend: iniciar.
+
+## Funciones integradas y permisos
+
+La interfaz conserva Dashboard, Clientes, Barberos, Servicios, Agendar cita y
+Fidelización. Clientes usa registros reales y permite registro, edición e historial.
+Administradores gestionan barberos y servicios; los barberos gestionan su agenda.
+Clientes consultan su propia información y citas. Todos pueden consultar el catálogo,
+reservar con su cuenta y usar el asistente y análisis de imágenes autenticados.
+
+Horario de reservas: 11:00 a 19:30, zona de Guatemala (UTC-06), con 5 minutos
+entre servicios. Reservas simultáneas se validan dentro de una transacción.
+Completar una cita acredita puntos una sola vez. Cancelar devuelve los puntos
+originalmente descontados, aunque cambie el precio de canje del servicio.
+Tres inasistencias bloquean nuevas reservas; el administrador puede reactivar
+la cuenta desde Fidelización. No se reinicia ni se vacía la base al arrancar.
+
+`FRONTEND_URL` configura CORS y el regreso de OAuth; por defecto localhost:4200.
+`GEMINI_MODEL` permite elegir un modelo disponible para la cuenta de Google.
+`ENABLE_DEV_LOGIN` está desactivado por defecto; el acceso normal usa Google.
+No activar acceso por correo sin verificación en un servidor compartido.
+
+Para asignar el primer administrador, actualizar explícitamente el rol del usuario
+correspondiente en la base local después de su primer ingreso con Google.
+Registrar un barbero con el mismo correo que utilizará para entrar con Google.
+
+## Verificación de integración local
+
+Con el backend en ejecución: `node scripts/integration.cjs`.
+La prueba crea registros temporales y los elimina al terminar. Verifica acceso,
+roles, validación, reservas simultáneas, propiedad de citas, devoluciones, puntos,
+inasistencias y reactivación. No usa credenciales de Google ni imprime tokens.
+No ejecutar sobre una base de producción.
+
+Para compartir los cambios hay que incluir todas las migraciones nuevas,
+el código y `.env.example`; cada compañero ejecuta `npx prisma migrate deploy`
+y `npx prisma generate` después de descargar el código. No usar `db seed` para
+actualizar una base existente: ese script borra los datos anteriores.

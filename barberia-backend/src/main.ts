@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -5,10 +6,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
   // Permitir peticiones desde la app de Angular
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: process.env.FRONTEND_URL || 'http://localhost:4200',
     credentials: true,
   });
 
@@ -27,5 +29,5 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`Backend corriendo en http://localhost:${port}`);
   console.log(`Documentación en http://localhost:${port}/api/docs`);
-  }
-  bootstrap();  
+}
+bootstrap();

@@ -1,59 +1,57 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { GetAvailableSlotsDto } from '../dto/get-available-slots.dto';
-import { AppointmentStatus } from '@prisma/client';
-import { UseGuards } from '@nestjs/common';
+import { StatusDto } from '../dto/manage.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-
+import { User } from '@prisma/client';
 @Controller('appointments')
+@UseGuards(JwtAuthGuard)
 export class AppointmentsController {
-  constructor(private readonly appointmentsService: AppointmentsService) {}
-
-  @Get('available')
-  getAvailableSlots(@Query() query: GetAvailableSlotsDto) {
-    return this.appointmentsService.getAvailableSlots(
-      query.barberId,
-      query.serviceId,
-      query.date,
-    );
+  constructor(private readonly service: AppointmentsService) {}
+  @Get('available') available(@Query() q: GetAvailableSlotsDto) {
+    return this.service.getAvailableSlots(q.barberId, q.serviceId, q.date);
   }
-
-  @Post()
-  create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.appointmentsService.create(createAppointmentDto);
+  @Get('my-appointments') mine(@CurrentUser() u: User) {
+    return this.service.list({ ...u, role: 'CLIENT' });
   }
-
-  @Patch(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.BARBER, Role.ADMIN)
-  
-  updateStatus(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('status') status: AppointmentStatus,
+  @Get('schedule') schedule(
+    @CurrentUser() u: User,
+    @Query('date') date: string,
   ) {
-    return this.appointmentsService.updateStatus(id, status);
+    return this.service.list(u, undefined, date);
   }
-
-  @Patch(':id/cancel')
-  cancel(@Param('id', ParseIntPipe) id: number) {
-    return this.appointmentsService.cancelByClient(id);
+  @Get() list(
+    @CurrentUser() u: User,
+    @Query('clientId', new ParseIntPipe({ optional: true })) clientId?: number,
+  ) {
+    return this.service.list(u, clientId);
   }
-  @UseGuards(JwtAuthGuard)
-  @Get('my-appointments')
-  getMyAppointments(@CurrentUser() user: any) {
-    return this.appointmentsService.getClientAppointments(user.sub);
+  @Post() create(@Body() data: CreateAppointmentDto, @CurrentUser() u: User) {
+    return this.service.create(data, u);
   }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.BARBER, Role.ADMIN)
-  @Get('schedule')
-  getSchedule(@CurrentUser() user: any, @Query('date') date: string) {
-    return this.appointmentsService.getBarberSchedule(user.sub, date);
+  @Patch(':id/status') status(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: StatusDto,
+    @CurrentUser() u: User,
+  ) {
+    return this.service.updateStatus(id, data.status, u);
   }
-
+  @Patch(':id/cancel') cancel(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() u: User,
+  ) {
+    return this.service.updateStatus(id, 'CANCELLED', u);
+  }
 }

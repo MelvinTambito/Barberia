@@ -1,42 +1,5 @@
 <div class="app-container">
-  <div class="top-bar">
-    <div class="top-bar-left">
-      <span>💈 <strong>BARBERÍA TRADICIONAL</strong></span>
-      <span class="divider">|</span>
-      <span>Horario: 09:00 - 20:00 • Navaja, Toalla Caliente & Tijera Clásica</span>
-    </div>
-    <div class="top-bar-right">
-      <span class="gold-text">★ Calidad & Oficio Tradicional desde 2026 ★</span>
-      <button class="btn-restore" (click)="cerrarSesion()">CERRAR SESIÓN</button>
-    </div>
-  </div>
-
-  <header class="main-header">
-    <div class="brand-box">
-      <div class="brand-icon">✂</div>
-      <div class="brand-text">
-        <h1>BARBER APP</h1>
-        <p>GESTIÓN & CLUB DE LEALTAD</p>
-      </div>
-    </div>
-
-    <nav class="nav-menu">
-      <button class="nav-item" (click)="navegarA('/dashboard')">📊 DASHBOARD</button>
-      <button class="nav-item active">👥 CLIENTES</button>
-      <button class="nav-item" (click)="navegarA('/barberos')">✂️ BARBEROS</button>
-      <button class="nav-item" (click)="navegarA('/servicios')">🧹 SERVICIOS</button>
-      <button class="nav-item" (click)="navegarA('/citas')">
-        📅 AGENDAR CITA <span class="badge">4 HOY</span>
-      </button>
-      <button class="nav-item" (click)="navegarA('/fidelizacion')">
-        🏅 FIDELIZACIÓN <span class="gold-badge">PUNTOS</span>
-      </button>
-      <button class="btn-primary-action" (click)="navegarA('/citas')">
-        ✂️ + AGENDAR CITA
-      </button>
-    </nav>
-  </header>
-
+  <app-navigation />
   <section class="section-banner">
     <div class="banner-title-box">
       <p class="banner-subtitle">★ PADRÓN DE CABALLEROS & CLIENTES ★</p>
@@ -46,29 +9,67 @@
       </p>
     </div>
     <div class="banner-action-box">
-      <button class="btn-hero-red" (click)="abrirModalNuevoCliente()">
+      <button class="btn-hero-red" *ngIf="staff" (click)="abrirModalNuevoCliente()">
         👤+ REGISTRAR NUEVO CLIENTE
       </button>
     </div>
   </section>
 
+  <p class="notice" *ngIf="loading">Cargando clientes…</p>
+  <p class="notice error" *ngIf="error" role="alert">{{ error }}</p>
+  <p class="notice" *ngIf="message" role="status">{{ message }}</p>
+  <section class="workspace" *ngIf="showForm">
+    <h3>{{ editing ? 'Editar cliente' : 'Registrar nuevo cliente' }}</h3>
+    <form #form="ngForm" (ngSubmit)="guardar()">
+      <div class="fields">
+        <label>Nombre<input name="name" [(ngModel)]="person.name" maxlength="100" required /></label
+        ><label
+          >Correo<input
+            type="email"
+            name="email"
+            [(ngModel)]="person.email"
+            required
+            email /></label
+        ><label>Teléfono<input name="phone" [(ngModel)]="person.phone" maxlength="30" /></label>
+      </div>
+      <div class="actions">
+        <button class="btn-hero-red" [disabled]="form.invalid || saving">
+          {{ saving ? 'Guardando…' : 'Guardar' }}</button
+        ><button type="button" class="btn-hero-outline" (click)="showForm = false">Cancelar</button>
+      </div>
+    </form>
+  </section>
+  <section class="workspace" *ngIf="history !== null">
+    <h3>Historial de citas</h3>
+    <p *ngFor="let a of history">
+      {{ a.startTime | date: 'dd/MM/yyyy HH:mm' : '-0600' }} · {{ a.service.name }} ·
+      {{ a.barber.name }} · {{ estado(a.status) }}
+    </p>
+    <p *ngIf="!history.length">Sin citas registradas.</p>
+    <button class="btn-hero-outline" (click)="history = null">Cerrar historial</button>
+  </section>
   <section class="filter-bar">
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input 
-        type="text" 
-        placeholder="Buscar por nombre, teléfono o correo..." 
+      <input
+        type="text"
+        placeholder="Buscar por nombre, teléfono o correo..."
         [(ngModel)]="filtro"
         (input)="filtrarClientes()"
       />
     </div>
     <div class="summary-info">
-      <span>TOTAL CLIENTES: <strong>{{ clientesFiltrados.length }}</strong></span>
+      <span
+        >TOTAL CLIENTES: <strong>{{ clientesFiltrados.length }}</strong></span
+      >
       <span class="divider">|</span>
-      <span class="gold-text">PUNTOS EN CIRCULACIÓN: <strong>245 PTS</strong></span>
+      <span class="gold-text"
+        >PUNTOS EN CIRCULACIÓN: <strong>{{ totalPoints }} PTS</strong></span
+      >
     </div>
   </section>
 
+  <p class="notice" *ngIf="!loading && !clientesFiltrados.length">No hay clientes para mostrar.</p>
   <section class="table-container">
     <table class="client-table">
       <thead>
@@ -104,19 +105,23 @@
             </span>
           </td>
           <td>
-            <div class="points-box">
-              🎗️ {{ cliente.puntos }} pts
-            </div>
+            <div class="points-box">🎗️ {{ cliente.puntos }} pts</div>
           </td>
           <td class="visits-count">
             {{ cliente.visitas }}
           </td>
           <td class="text-center">
             <div class="actions-box">
-              <button class="btn-icon" title="Historial">🕒</button>
-              <button class="btn-agendar" (click)="agendarParaCliente(cliente)">
-                📅 AGENDAR
+              <button
+                *ngIf="staff"
+                class="btn-icon"
+                title="Editar cliente"
+                (click)="editar(cliente)"
+              >
+                ✎
               </button>
+              <button class="btn-icon" title="Historial" (click)="historial(cliente)">🕒</button>
+              <button class="btn-agendar" (click)="agendarParaCliente(cliente)">📅 AGENDAR</button>
             </div>
           </td>
         </tr>

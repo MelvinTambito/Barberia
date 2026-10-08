@@ -3,42 +3,43 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
-  Body,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VisagismService } from './visagism.service';
-import { ApiConsumes, ApiBody, ApiTags, ApiOperation } from '@nestjs/swagger';
-
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 @ApiTags('Visagism')
+@ApiBearerAuth()
 @Controller('visagism')
+@UseGuards(JwtAuthGuard)
 export class VisagismController {
-  constructor(private readonly visagismService: VisagismService) {}
-
+  constructor(private readonly service: VisagismService) {}
   @Post('analyze')
-  @ApiOperation({ summary: 'Analizar rostro del cliente y guardar recomendación' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
-      properties: {
-        userId: { type: 'string', example: 'uuid-del-usuario' },
-        file: { type: 'string', format: 'binary' },
-      },
+      required: ['file'],
+      properties: { file: { type: 'string', format: 'binary' } },
     },
   })
-  @UseInterceptors(FileInterceptor('file'))
-  async analyze(
-    @Body('userId') userId: string,
-    @UploadedFile() file: any,
-  ) {
-    if (!file) {
-      throw new BadRequestException('Se requiere una imagen para el análisis');
-    }
-    if (!userId) {
-      throw new BadRequestException('El ID de usuario es requerido');
-    }
-
-    return this.visagismService.analyzeFace(userId, file);
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) =>
+        cb(
+          /^(image\/jpeg|image\/png|image\/webp)$/.test(file.mimetype)
+            ? null
+            : new BadRequestException('Usa una imagen JPG, PNG o WebP'),
+          true,
+        ),
+    }),
+  )
+  analyze(@UploadedFile() file: any, @CurrentUser() user: any) {
+    if (!file) throw new BadRequestException('Selecciona una imagen');
+    return this.service.analyzeFace(user.id, file);
   }
 }

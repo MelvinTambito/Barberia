@@ -1,26 +1,13 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { ChatbotService } from './chatbot.service';
-import { ApiTags, ApiOperation, ApiProperty } from '@nestjs/swagger';
-
-class ChatMessageDto {
-  @ApiProperty({ example: 1, description: 'ID numérico del usuario' })
-  userId: number;
-
-  @ApiProperty({ example: '¿Qué precios tienen para corte y barba?' })
-  message: string;
-}
-
-@ApiTags('Chatbot')
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { MessageDto } from '../dto/manage.dto';
 @Controller('chatbot')
+@UseGuards(JwtAuthGuard)
 export class ChatbotController {
-  constructor(private readonly chatbotService: ChatbotService) {}
-
-  @Post('message')
-  @ApiOperation({ summary: 'Enviar mensaje al asistente de IA de la barbería' })
-  async sendMessage(@Body() dto: ChatMessageDto) {
-    if (!dto.userId || !dto.message) {
-      throw new BadRequestException('userId y message son requeridos');
-    }
-    return this.chatbotService.handleMessage(dto.userId, dto.message);
+  constructor(private readonly service: ChatbotService) {}
+  @Post('message') send(@Body() data: MessageDto, @CurrentUser() user: any) {
+    return this.service.handleMessage(user.id, data.message);
   }
 }
