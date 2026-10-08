@@ -30,6 +30,11 @@
   </div>
 
   <nav class="nav-menu">
+    @if (user()?.isSuperAdmin && user()?.role === 'ADMIN') {
+      <button type="button" class="nav-item" routerLinkActive="active" routerLink="/administracion">
+        ⚙️ ADMINISTRACIÓN
+      </button>
+    }
     <button type="button" class="nav-item" routerLinkActive="active" routerLink="/dashboard">
       📊 DASHBOARD
     </button>

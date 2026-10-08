@@ -1,12 +1,14 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Api, Person, errorMessage } from '../core/services/api';
+import { Navigation } from './navigation';
 
 @Component({
   selector: 'app-administration',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, Navigation],
   template: `
+    <app-navigation />
     @if (me()?.isSuperAdmin && me()?.role === 'ADMIN') {
       <section class="workspace" aria-labelledby="administration-title">
         <h2 id="administration-title">Administración de accesos</h2>
