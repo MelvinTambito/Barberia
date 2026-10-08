@@ -5,13 +5,9 @@ import {
   UploadedFile,
   BadRequestException,
   UseGuards,
-  Body,
-  Param,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VisagismService } from './visagism.service';
-import { AnalysisImageDto } from '../dto/manage.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -21,10 +17,6 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
 export class VisagismController {
   constructor(private readonly service: VisagismService) {}
-  @Post(':id/image')
-  image(@Param('id', ParseIntPipe) id: number, @Body() body: AnalysisImageDto, @CurrentUser() user: any) {
-    return this.service.generateImage(user.id, id, body.kind);
-  }
   @Post('analyze')
   @ApiConsumes('multipart/form-data')
   @ApiBody({

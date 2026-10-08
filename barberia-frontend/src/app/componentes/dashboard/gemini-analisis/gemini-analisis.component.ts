@@ -4,11 +4,12 @@ import { environment } from '../../../../environments/environment';
 import { errorMessage } from '../../../core/services/api';
 import { HttpClient } from '@angular/common/http';
 import { Subscription, timeout } from 'rxjs';
+import { HaircutGallery } from '../../../shared/haircut-gallery';
 
 @Component({
   selector: 'app-gemini-analisis',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HaircutGallery],
   templateUrl: './gemini-analisis.component.html',
   styleUrls: ['./gemini-analisis.component.css'],
 })
@@ -18,17 +19,12 @@ export class GeminiAnalisisComponent implements OnDestroy {
   analysisResult: string | null = null;
   isProcessing: boolean = false;
   analysisId: number | null = null;
-  images: Record<string, { url: string; loading: boolean; error: string }> = {
-    reference: { url: '', loading: false, error: '' },
-    simulation: { url: '', loading: false, error: '' },
-  };
   private requests = new Subscription();
   private requestVersion = 0;
   private resetAnalysis() {
     this.requestVersion++;
     this.requests.unsubscribe(); this.requests = new Subscription();
     this.analysisId = null; this.isProcessing = false;
-    this.images = { reference: { url: '', loading: false, error: '' }, simulation: { url: '', loading: false, error: '' } };
   }
 
   // Control para la cámara
@@ -176,15 +172,6 @@ export class GeminiAnalisisComponent implements OnDestroy {
             : errorMessage(err);
         this.cdr.markForCheck();
       },
-    }));
-  }
-
-  generateImage(kind: 'reference' | 'simulation') {
-    if (!this.analysisId || this.images[kind].loading) return;
-    this.images[kind] = { url: '', loading: true, error: '' };
-    this.requests.add(this.http.post<{ imageUrl: string }>(`${environment.apiUrl}/visagism/${this.analysisId}/image`, { kind }).pipe(timeout(55000)).subscribe({
-      next: response => { this.images[kind] = { url: response.imageUrl, loading: false, error: '' }; this.cdr.markForCheck(); },
-      error: err => { this.images[kind] = { url: '', loading: false, error: err.name === 'TimeoutError' ? 'La imagen tardó demasiado. Vuelve a intentarlo.' : err.status === 0 ? 'No se recibió la imagen del servidor. Inténtalo de nuevo.' : errorMessage(err) }; this.cdr.markForCheck(); },
     }));
   }
 

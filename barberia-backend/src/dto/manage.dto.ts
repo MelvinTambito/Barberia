@@ -34,9 +34,6 @@ export class AdminDto {
   @IsIn(['CLIENTS', 'BARBERS', 'SERVICES', 'APPOINTMENTS', 'LOYALTY'], { each: true })
   permissions: string[];
 }
-export class AnalysisImageDto {
-  @IsIn(['reference', 'simulation']) kind: 'reference' | 'simulation';
-}
 export class ServiceDto {
   @IsString() @IsNotEmpty() @MaxLength(100) name: string;
   @IsOptional() @IsString() @MaxLength(1000) description?: string;
