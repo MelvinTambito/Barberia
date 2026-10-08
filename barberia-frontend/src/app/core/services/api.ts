@@ -6,6 +6,7 @@ export interface Person {
   name: string;
   email: string;
   phone?: string;
+  profilePhoto?: string | null;
   points: number;
   role: string;
   createdAt: string;

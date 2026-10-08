@@ -10,6 +10,7 @@ import {
   Max,
   MaxLength,
   Min,
+  Matches,
 } from 'class-validator';
 import { AppointmentStatus } from '@prisma/client';
 
@@ -17,6 +18,11 @@ export class PersonDto {
   @IsString() @IsNotEmpty() @MaxLength(100) name: string;
   @IsEmail() email: string;
   @IsOptional() @IsString() @MaxLength(30) phone?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(90000)
+  @Matches(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/)
+  profilePhoto?: string | null;
 }
 export class ServiceDto {
   @IsString() @IsNotEmpty() @MaxLength(100) name: string;

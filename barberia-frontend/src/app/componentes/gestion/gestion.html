@@ -22,6 +22,7 @@
     <button *ngIf="admin" class="btn-hero-red" (click)="editPerson()">+ REGISTRAR BARBERO</button>
     <form *ngIf="showPerson" #pf="ngForm" (ngSubmit)="savePerson()">
       <h3>{{ editingPerson ? 'Editar' : 'Nuevo' }} barbero</h3>
+      <app-profile-photo [(photo)]="person.profilePhoto" [disabled]="saving" (busyChange)="photoBusy = $event" />
       <div class="fields">
         <label>Nombre<input name="name" [(ngModel)]="person.name" required maxlength="100" /></label
         ><label
@@ -34,7 +35,7 @@
         ><label>Teléfono<input name="phone" [(ngModel)]="person.phone" maxlength="30" /></label>
       </div>
       <div class="actions">
-        <button class="btn-hero-red" [disabled]="pf.invalid || saving">Guardar</button
+        <button class="btn-hero-red" [disabled]="pf.invalid || saving || photoBusy">Guardar</button
         ><button type="button" class="btn-hero-outline" (click)="showPerson = false">
           Cancelar
         </button>
@@ -42,6 +43,7 @@
     </form>
     <div class="cards">
       <article class="metric-card" *ngFor="let b of admin ? people : barbers">
+        <img *ngIf="b.profilePhoto" [src]="b.profilePhoto" [alt]="'Foto de ' + b.name" width="96" height="96" style="object-fit: cover; border-radius: 50%; border: 2px solid #c5a059;" />
         <h3>✂️ {{ b.name }}</h3>
         <div class="actions">
           <a class="btn-hero-outline" routerLink="/citas" [queryParams]="{ barberoId: b.id }"

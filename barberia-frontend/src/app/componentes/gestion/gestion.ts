@@ -5,10 +5,11 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, Subscription } from 'rxjs';
 import { Api, Person, Service, Appointment, errorMessage } from '../../core/services/api';
 import { Navigation } from '../../shared/navigation';
+import { ProfilePhoto } from '../../shared/profile-photo';
 @Component({
   selector: 'app-gestion',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, Navigation],
+  imports: [CommonModule, FormsModule, RouterLink, Navigation, ProfilePhoto],
   templateUrl: './gestion.html',
   styleUrls: ['../dashboard/dashboard.css', '../../shared/forms.css'],
 })
@@ -17,7 +18,7 @@ export class Gestion implements OnInit, OnDestroy {
   me!: Person;
   people: Person[] = [];
   services: Service[] = [];
-  barbers: { id: number; name: string }[] = [];
+  barbers: { id: number; name: string; profilePhoto?: string | null }[] = [];
   appointments: Appointment[] = [];
   loading = true;
   saving = false;
@@ -35,7 +36,8 @@ export class Gestion implements OnInit, OnDestroy {
     citas: 'Libro de Citas',
     fidelizacion: 'Club de Fidelización',
   };
-  person = { name: '', email: '', phone: '' };
+  person = { name: '', email: '', phone: '', profilePhoto: null as string | null };
+  photoBusy = false;
   editingPerson: number | null = null;
   showPerson = false;
   service = {
@@ -151,12 +153,13 @@ export class Gestion implements OnInit, OnDestroy {
   }
   editPerson(p?: Person) {
     this.editingPerson = p?.id || null;
-    this.person = { name: p?.name || '', email: p?.email || '', phone: p?.phone || '' };
+    this.photoBusy = false;
+    this.person = { name: p?.name || '', email: p?.email || '', phone: p?.phone || '', profilePhoto: p?.profilePhoto || null };
     this.showPerson = true;
     this.error = '';
   }
   savePerson() {
-    if (this.saving) return;
+    if (this.saving || this.photoBusy) return;
     this.saving = true;
     this.error = '';
     const req = this.editingPerson

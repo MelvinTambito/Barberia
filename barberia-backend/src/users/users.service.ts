@@ -14,7 +14,7 @@ export class UsersService {
   getBarbers() {
     return this.prisma.user.findMany({
       where: { role: Role.BARBER, accountStatus: 'ACTIVE' },
-      select: { id: true, name: true },
+      select: { id: true, name: true, profilePhoto: true },
       orderBy: { name: 'asc' },
     });
   }
@@ -60,6 +60,9 @@ export class UsersService {
         name: data.name.trim(),
         email: data.email.trim().toLowerCase(),
         phone: data.phone || null,
+        ...(role === 'BARBER' && data.profilePhoto !== undefined
+          ? { profilePhoto: data.profilePhoto }
+          : {}),
       };
       return id
         ? await this.prisma.user.update({ where: { id }, data: values })
