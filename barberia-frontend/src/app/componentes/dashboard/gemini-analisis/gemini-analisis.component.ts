@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { errorMessage } from '../../../core/services/api';
@@ -23,7 +23,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
   cameraActive: boolean = false;
   mediaStream: MediaStream | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   // 1. Manejar archivo seleccionado desde la PC
   onFileSelected(event: any) {
@@ -39,6 +39,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedImageUrl = e.target.result;
+        this.cdr.markForCheck();
       };
       reader.readAsDataURL(file);
     }
@@ -49,16 +50,22 @@ export class GeminiAnalisisComponent implements OnDestroy {
     this.cameraActive = true;
     this.analysisResult = null;
     try {
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      setTimeout(() => {
-        if (this.videoElement) {
-          this.videoElement.nativeElement.srcObject = this.mediaStream;
-        }
-      }, 100);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (!this.cameraActive) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      this.mediaStream = stream;
+      this.cdr.detectChanges();
+      const video = this.videoElement.nativeElement;
+      video.muted = true;
+      video.srcObject = stream;
+      await video.play();
     } catch (error) {
       console.error('No se pudo acceder a la cámara:', error);
-      alert('Error al encender la cámara. Revisa los permisos del navegador.');
-      this.cameraActive = false;
+      this.apagarCamara();
+      this.analysisResult = 'No se pudo abrir la cámara. Permite el acceso en el navegador y comprueba que otra aplicación no la esté usando.';
+      this.cdr.markForCheck();
     }
   }
 
@@ -66,6 +73,10 @@ export class GeminiAnalisisComponent implements OnDestroy {
   capturarFoto() {
     const video = this.videoElement.nativeElement;
     const canvas = this.canvasElement.nativeElement;
+    if (!video.videoWidth || !video.videoHeight) {
+      this.analysisResult = 'Espera a que aparezca la imagen de la cámara antes de capturar.';
+      return;
+    }
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
@@ -78,6 +89,7 @@ export class GeminiAnalisisComponent implements OnDestroy {
           this.selectedFile = new File([blob], 'captura-webcam.jpg', { type: 'image/jpeg' });
           this.selectedImageUrl = canvas.toDataURL('image/jpeg');
           this.apagarCamara();
+          this.cdr.markForCheck();
         }
       }, 'image/jpeg');
     }
@@ -108,11 +120,13 @@ export class GeminiAnalisisComponent implements OnDestroy {
         this.analysisResult =
           [response.data?.faceShape, response.data?.recommendations].filter(Boolean).join(': ') ||
           'No se recibió una recomendación.';
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error al conectar con la API:', err);
         this.isProcessing = false;
         this.analysisResult = errorMessage(err);
+        this.cdr.markForCheck();
       },
     });
   }
