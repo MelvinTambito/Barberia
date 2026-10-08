@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Frontend: iniciar",
+      "type": "shell",
+      "command": "npm.cmd start",
+      "options": {
+        "cwd": "${workspaceFolder}/barberia-frontend",
+        "env": { "NG_CLI_ANALYTICS": "false" }
+      },
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated" }
+    },
+    {
+      "label": "Backend: iniciar",
+      "type": "shell",
+      "command": "npm.cmd run start:dev",
+      "options": {
+        "cwd": "${workspaceFolder}/barberia-backend",
+        "env": { "NODE_USE_SYSTEM_CA": "1" }
+      },
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated" }
+    }
+  ]
+}
