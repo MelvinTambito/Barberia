@@ -7,6 +7,14 @@
   </div>
   <div class="top-bar-right">
     <span class="gold-text">★ Calidad & Oficio Tradicional desde 2026 ★</span>
+    <span class="user-identity" aria-live="polite">
+      @if (user(); as profile) {
+        <strong>{{ profile.name }}</strong>
+        <span class="gold-badge">{{ roleLabel(profile.role) }}</span>
+      } @else {
+        <span>{{ profileError() ? 'Perfil no disponible' : 'Cargando perfil…' }}</span>
+      }
+    </span>
     <button type="button" class="btn-restore" (click)="auth.logout()">CERRAR SESIÓN</button>
   </div>
 </div>
